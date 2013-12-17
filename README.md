@@ -8,7 +8,7 @@ Mercury branch
 --------------
 
 Mercury is the Roman God of travelers (among other stuff!).
-In our project, Mercury branch concerns the robot itself. It embeds a PIC microcontroller that manages servo-motors and battery life time. Moreover, it is connected to a Raspberry Pi module by a USB wire.
+In our project, Mercury branch concerns the robot itself. It embeds a PIC microcontroller that manages servo-motors and battery life time. Moreover, it is connected to a Raspberry Pi module by a serial link (UART).
 
 
 Polyphemus branch
