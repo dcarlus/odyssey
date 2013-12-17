@@ -1,0 +1,100 @@
+;/////////////////////////////////////////////////////////////////////////////////
+;// Code Generator: BoostC Compiler - http://www.sourceboost.com
+;// Version       : 7.20
+;// License Type  : Pro License
+;// Limitations   : PIC12,PIC16 max code size:Unlimited, max RAM banks:Unlimited
+;/////////////////////////////////////////////////////////////////////////////////
+
+
+Map File
+
+Program Memory usage
+====================
+
+Address  Length   Unique Name      Name
+-------  ------   -----------      ----
+00000000:00000004 _resetvector     _resetvector  
+00000004:0000000C _interruptVector _interruptVector  
+00000010:0000000E delay_ms_00000   delay_ms(unsigned char)  
+0000001E:0000000F delay_s_00000    delay_s(unsigned char)  
+0000002D:00000007 UARTReadBy_00011 UARTReadByte(void)  
+00000034:00000005 UARTWriteB_00012 UARTWriteByte(unsigned char)  
+00000039:0000000D UARTInit_00000   UARTInit(unsigned char)  
+00000046:00000012 ADCReadWor_00013 ADCReadWord(void)  
+00000058:00000009 ADCInit_00000    ADCInit(void)  
+00000061:00000026 main             main(void)  
+00000087:00000003 _startup_00000   _startup(void)  
+0000008A:0000001F interrupt        interrupt(void)  
+000000A9:00001F57 *Unused Block 
+
+Register usage
+==============
+
+Address  Bit Lengh Bit Mask   Unique Name                      Name
+-------  --------- --------   -----------                      ----
+00000000:00000008             gbl_indf                         indf
+00000001:00000008             gbl_tmr0                         tmr0
+00000002:00000008             gbl_pcl                          pcl
+00000003:00000008             gbl_status                       status
+00000004:00000008             gbl_fsr                          fsr
+00000005:00000008             gbl_porta                        porta
+00000006:00000008             gbl_portb                        portb
+00000007:00000008             gbl_portc                        portc
+0000000A:00000008             gbl_pclath                       pclath
+0000000B:00000008             gbl_intcon                       intcon
+0000000C:00000008             gbl_pir1                         pir1
+0000000D:00000008             gbl_pir2                         pir2
+0000000E:00000008             gbl_tmr1l                        tmr1l
+0000000F:00000008             gbl_tmr1h                        tmr1h
+00000010:00000008             gbl_t1con                        t1con
+00000011:00000008             gbl_tmr2                         tmr2
+00000012:00000008             gbl_t2con                        t2con
+00000013:00000008             gbl_sspbuf                       sspbuf
+00000014:00000008             gbl_sspcon                       sspcon
+00000015:00000008             gbl_ccpr1l                       ccpr1l
+00000016:00000008             gbl_ccpr1h                       ccpr1h
+00000017:00000008             gbl_ccp1con                      ccp1con
+00000018:00000008             gbl_rcsta                        rcsta
+00000019:00000008             gbl_txreg                        txreg
+0000001A:00000008             gbl_rcreg                        rcreg
+0000001B:00000008             gbl_ccpr2l                       ccpr2l
+0000001C:00000008             gbl_ccpr2h                       ccpr2h
+0000001D:00000008             gbl_ccp2con                      ccp2con
+0000001E:00000008             gbl_adresh                       adresh
+0000001F:00000008             gbl_adcon0                       adcon0
+00000020:00000018             Int1BContext                     Int1BContext
+00000023:00000010             gbl_Battery_Voltage              Battery_Voltage
+00000025:00000008             delay_s_00000_arg_del            del
+00000026:00000008             delay_ms_00000_arg_del           del
+00000028:00000008             interrupt_1_Command              Command
+00000029:00000008             CompTempVar605                  
+0000002A:00000008             CompTempVarRet604                $ret
+0000007F:00000008             Int1Context                      Int1Context
+00000081:00000008             gbl_option_reg                   option_reg
+00000085:00000008             gbl_trisa                        trisa
+00000086:00000008             gbl_trisb                        trisb
+00000087:00000008             gbl_trisc                        trisc
+0000008C:00000008             gbl_pie1                         pie1
+0000008D:00000008             gbl_pie2                         pie2
+0000008E:00000008             gbl_pcon                         pcon
+00000091:00000008             gbl_sspcon2                      sspcon2
+00000092:00000008             gbl_pr2                          pr2
+00000093:00000008             gbl_sspadd                       sspadd
+00000094:00000008             gbl_sspstat                      sspstat
+00000098:00000008             gbl_txsta                        txsta
+00000099:00000008             gbl_spbrg                        spbrg
+0000009E:00000008             gbl_adresl                       adresl
+0000009F:00000008             gbl_adcon1                       adcon1
+0000010C:00000008             gbl_eedata                       eedata
+0000010D:00000008             gbl_eeadr                        eeadr
+0000010E:00000008             gbl_eedath                       eedath
+0000010F:00000008             gbl_eeadrh                       eeadrh
+0000018C:00000008             gbl_eecon1                       eecon1
+0000018D:00000008             gbl_eecon2                       eecon2
+
+
+Memory Usage Report
+===================
+RAM available:368 bytes, used:12 bytes (3.3%), free:356 bytes (96.7%), 
+Heap size:356 bytes, Heap max single alloc:110 bytes
+ROM available:8192 words, used:169 words (2.1%), free:8023 words (97.9%)

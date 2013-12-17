@@ -1,0 +1,19 @@
+// SourceBoost Linker Function Resource Usage Dump
+
+#GLOBAL:"global",line = 0,ram = 6.0,rom = 0;
+ADCInit(void):"C:\Documents and Settings\AR\Bureau\Firmware\Driver_ADC.c",line = 11,ram = 0.0,rom = 9;
+ADCReadWord(void):"C:\Documents and Settings\AR\Bureau\Firmware\Driver_ADC.c",line = 21,ram = 3.0,rom = 18;
+UARTInit(unsigned char):"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 11,ram = 0.0,rom = 13;
+UARTReadByte(void):"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 23,ram = 1.0,rom = 7;
+UARTWriteByte(unsigned char):"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 31,ram = 0.0,rom = 5;
+interrupt(void):"C:\Documents and Settings\AR\Bureau\odyssey\mercury\Software\Main.c",line = 30,ram = 4.0,rom = 78;
+main(void):"C:\Documents and Settings\AR\Bureau\odyssey\mercury\Software\Main.c",line = 85,ram = 0.0,rom = 39;
+MotorInit(void):"C:\Documents and Settings\AR\Bureau\Firmware\Motor.c",line = 16,ram = 0.0,rom = 14;
+MotorSetState(unsigned char,unsigned char):"C:\Documents and Settings\AR\Bureau\Firmware\Motor.c",line = 34,ram = 12.0,rom = 100;
+delay_ms(unsigned char):"NoSourceFile",line = 0,ram = 0.0,rom = 14;
+delay_s(unsigned char):"NoSourceFile",line = 0,ram = 1.0,rom = 15;
+_startup(void):"NoSourceFile",line = 0,ram = 0.0,rom = 3;
+#HEAP_BLOCK: 0, 272, 111;
+#HEAP_BLOCK: 1, 400, 96;
+#HEAP_BLOCK: 2, 160, 80;
+#HEAP_BLOCK: 3, 56, 56;

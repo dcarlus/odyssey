@@ -1,0 +1,565 @@
+;/////////////////////////////////////////////////////////////////////////////////
+;// Code Generator: BoostC Compiler - http://www.sourceboost.com
+;// Version       : 7.20
+;// License Type  : Pro License
+;// Limitations   : PIC12,PIC16 max code size:Unlimited, max RAM banks:Unlimited
+;/////////////////////////////////////////////////////////////////////////////////
+
+/** Main.c
+ * Main loop.
+ * @author Adrien RICCIARDI
+ * @version 1.0 : 15/12/2013
+ */
+#include <system.h>
+#include "Driver_UART.h"
+#include "Driver_ADC.h"
+#include "Robot.h"
+#include "Motor.h"
+
+//---------------------------------------------------------------------------------------------------------------
+// Constants
+//---------------------------------------------------------------------------------------------------------------
+// Configure PIC16F876 fuses
+#pragma DATA _CONFIG, _PWRTE_ON & _BODEN_ON & _WDT_OFF & _LVP_OFF & _CPD_OFF & _DEBUG_OFF & _XT_OSC & _CP_OFF
+// Configure clock frequency (Hz)
+#pragma CLOCK_FREQ 3686400
+
+//---------------------------------------------------------------------------------------------------------------
+// Global variables
+//---------------------------------------------------------------------------------------------------------------
+unsigned short Battery_Voltage;
+
+//---------------------------------------------------------------------------------------------------------------
+// Functions
+//---------------------------------------------------------------------------------------------------------------
+void interrupt(void)
+
+{
+	unsigned char Command;
+
+	TMotor Motor;
+	TMotorState State;
+	
+	// Handle UART receive interrupt
+	if (UARTHasInterruptOccured())
+00FD  1283  	BCF STATUS, RP0
+00FE  1303  	BCF STATUS, RP1
+00FF  1E8C  	BTFSS gbl_pir1,5
+0100  2942  	GOTO	label28
+0142        label28
+
+	{
+		Command = UARTReadByte();
+0101  2091  	CALL UARTReadBy_00011
+0102  082D  	MOVF CompTempVarRet629, W
+0103  00A8  	MOVWF interrupt_1_Command
+
+		
+		// Check command opcode
+		switch (Command & ROBOT_COMMANDS_CODE_MASK)
+0104  30C0  	MOVLW 0xC0
+0105  0528  	ANDWF interrupt_1_Command, W
+0106  00AB  	MOVWF CompTempVar630
+
+		{
+			// Set motor state
+			case ROBOT_COMMAND_SET_MOTOR_STATE:
+0107  082B  	MOVF CompTempVar630, W
+0108  3A00  	XORLW 0x00
+0109  1903  	BTFSC STATUS,Z
+010A  2912  	GOTO	label18
+0112        label18
+
+				// Extract motor ID
+				if (Command & 0x20) Motor = Right;
+0112  1EA8  	BTFSS interrupt_1_Command,5
+0113  2917  	GOTO	label19
+0114  3001  	MOVLW 0x01
+0115  00A9  	MOVWF interrupt_1_Motor
+0117        label19
+
+				else Motor = Left;
+0116  2918  	GOTO	label20
+0117  01A9  	CLRF interrupt_1_Motor
+0118        label20
+
+				
+				// Extract requested state
+				Command = (Command >> 3) & 0x03;
+0118  0CA8  	RRF interrupt_1_Command, F
+0119  0CA8  	RRF interrupt_1_Command, F
+011A  0CA8  	RRF interrupt_1_Command, F
+011B  301F  	MOVLW 0x1F
+011C  05A8  	ANDWF interrupt_1_Command, F
+011D  3003  	MOVLW 0x03
+011E  05A8  	ANDWF interrupt_1_Command, F
+
+				if (Command == 1) State = Forward;
+011F  0328  	DECF interrupt_1_Command, W
+0120  1D03  	BTFSS STATUS,Z
+0121  2925  	GOTO	label21
+0122  3001  	MOVLW 0x01
+0123  00AA  	MOVWF interrupt_1_State
+0125        label21
+
+				else if (Command == 2) State = Backward;
+0124  292D  	GOTO	label23
+0125  0828  	MOVF interrupt_1_Command, W
+0126  3A02  	XORLW 0x02
+0127  1D03  	BTFSS STATUS,Z
+0128  292C  	GOTO	label22
+0129  3002  	MOVLW 0x02
+012A  00AA  	MOVWF interrupt_1_State
+012C        label22
+
+				else State = Stopped; // So an unknown state will stop the motor
+012B  292D  	GOTO	label23
+012C  01AA  	CLRF interrupt_1_State
+012D        label23
+
+				
+				// Apply new state
+				MotorSetState(Motor, State);
+012D  0829  	MOVF interrupt_1_Motor, W
+012E  00AE  	MOVWF MotorSetSt_00014_arg_Motor
+012F  082A  	MOVF interrupt_1_State, W
+0130  00AF  	MOVWF MotorSetSt_00014_arg_State
+0131  202D  	CALL MotorSetSt_00014
+
+				break;
+0132  2941  	GOTO	label27
+
+				
+			// Light or turn off the green LED
+			case ROBOT_COMMAND_SET_LED_STATE:
+010B  3A40  	XORLW 0x40
+010C  1903  	BTFSC STATUS,Z
+010D  2933  	GOTO	label24
+0133        label24
+
+				// Bit 5 tells the led state
+				if (Command & 40) RobotLedOn();
+0133  3028  	MOVLW 0x28
+0134  0528  	ANDWF interrupt_1_Command, W
+0135  1903  	BTFSC STATUS,Z
+0136  2939  	GOTO	label25
+0137  1786  	BSF gbl_portb,7
+0139        label25
+
+				else RobotLedOff();
+0138  2941  	GOTO	label27
+0139  1386  	BCF gbl_portb,7
+
+				break;
+013A  2941  	GOTO	label27
+
+				
+			// Return the last sampled battery voltage value
+			case ROBOT_COMMAND_READ_BATTERY_VOLTAGE:
+010E  3AC0  	XORLW 0xC0
+010F  1903  	BTFSC STATUS,Z
+0110  293B  	GOTO	label26
+013B        label26
+
+				// Send value in big endian mode
+				UARTWriteByte(Battery_Voltage >> 8);
+013B  0824  	MOVF gbl_Battery_Voltage+D'1', W
+013C  00AC  	MOVWF UARTWriteB_00012_arg_Byte
+013D  2098  	CALL UARTWriteB_00012
+
+				UARTWriteByte(Battery_Voltage);
+013E  0823  	MOVF gbl_Battery_Voltage, W
+013F  00AC  	MOVWF UARTWriteB_00012_arg_Byte
+0140  2098  	CALL UARTWriteB_00012
+
+				break;
+		
+			// Unknown command, do nothing
+			default:
+0111  2941  	GOTO	label27
+0141        label27
+
+				break;
+		}
+	
+		// Re-enable UART interrupt
+		UARTClearInterruptFlag();
+0141  128C  	BCF gbl_pir1,5
+
+	}
+}
+0142  0E22  	SWAPF Int1BContext+D'2', W
+0143  0084  	MOVWF FSR
+0144  0E21  	SWAPF Int1BContext+D'1', W
+0145  008A  	MOVWF PCLATH
+0146  0E20  	SWAPF Int1BContext, W
+0147  0083  	MOVWF STATUS
+0148  0EFF  	SWAPF Int1Context, F
+0149  0E7F  	SWAPF Int1Context, W
+014A  0009  	RETFIE
+
+
+void main(void)
+
+{
+	// Initialize robot
+	RobotInit();
+00D3  1683  	BSF STATUS, RP0
+00D4  1303  	BCF STATUS, RP1
+00D5  0186  	CLRF gbl_trisb
+
+	MotorInit();
+00D6  20AA  	CALL MotorInit_00000
+
+	ADCInit();
+00D7  20CA  	CALL ADCInit_00000
+
+	UARTInit(UART_BAUD_RATE_115200);
+00D8  3001  	MOVLW 0x01
+00D9  00A5  	MOVWF UARTInit_00000_arg_Baud_Rate
+00DA  209D  	CALL UARTInit_00000
+
+	
+	// Stop motors
+	MotorSetState(Left, Stopped);
+00DB  01AE  	CLRF MotorSetSt_00014_arg_Motor
+00DC  01AF  	CLRF MotorSetSt_00014_arg_State
+00DD  202D  	CALL MotorSetSt_00014
+
+	MotorSetState(Right, Stopped);
+00DE  3001  	MOVLW 0x01
+00DF  00AE  	MOVWF MotorSetSt_00014_arg_Motor
+00E0  01AF  	CLRF MotorSetSt_00014_arg_State
+00E1  202D  	CALL MotorSetSt_00014
+
+		
+	// Turn off LED to let master light it when it has finished booting
+	RobotLedOff();
+00E2  1386  	BCF gbl_portb,7
+
+	
+	// Do some fake reads to calibrate ADC
+	ADCReadWord();
+00E3  20B8  	CALL ADCReadWor_00013
+
+	ADCReadWord();
+00E4  20B8  	CALL ADCReadWor_00013
+
+	
+	// Wait for the master to send the start code (avoid interpreting false commands sent when master is booting)
+	while (UARTReadByte() != ROBOT_START_CODE);
+00E5        label15
+00E5  2091  	CALL UARTReadBy_00011
+00E6  082D  	MOVF CompTempVarRet629, W
+00E7  3ACA  	XORLW 0xCA
+00E8  1D03  	BTFSS STATUS,Z
+00E9  28E5  	GOTO	label15
+
+	
+	// Enable interrupts
+	intcon = 0xC0;
+00EA  30C0  	MOVLW 0xC0
+00EB  008B  	MOVWF gbl_intcon
+
+	
+	// Main loop
+	while (1)
+00EC        label16
+00F9  28EC  	GOTO	label16
+
+	{
+		// Read battery voltage each second
+		UARTDisableInterrupt(); // Atomic operation
+00EC  1683  	BSF STATUS, RP0
+00ED  128C  	BCF gbl_pie1,5
+
+		Battery_Voltage = ADCReadWord();
+00EE  20B8  	CALL ADCReadWor_00013
+00EF  0826  	MOVF CompTempVarRet622, W
+00F0  00A3  	MOVWF gbl_Battery_Voltage
+00F1  0827  	MOVF CompTempVarRet622+D'1', W
+00F2  00A4  	MOVWF gbl_Battery_Voltage+D'1'
+
+		UARTEnableInterrupt();
+00F3  1683  	BSF STATUS, RP0
+00F4  168C  	BSF gbl_pie1,5
+
+		delay_s(1);
+00F5  3001  	MOVLW 0x01
+00F6  1283  	BCF STATUS, RP0
+00F7  00A5  	MOVWF delay_s_00000_arg_del
+00F8  201E  	CALL delay_s_00000
+
+	}
+}
+
+}
+////////////////////////////////////////
+// Code with no source :-)
+////////////////////////////////////////
+0000  28FA  	GOTO	_startup
+
+0004  00FF  	MOVWF Int1Context
+0005  0E03  	SWAPF STATUS, W
+0006  1283  	BCF STATUS, RP0
+0007  1303  	BCF STATUS, RP1
+0008  00A0  	MOVWF Int1BContext
+0009  0E0A  	SWAPF PCLATH, W
+000A  00A1  	MOVWF Int1BContext+D'1'
+000B  0E04  	SWAPF FSR, W
+000C  00A2  	MOVWF Int1BContext+D'2'
+000D  118A  	BCF PCLATH,3
+000E  120A  	BCF PCLATH,4
+000F  28FD  	GOTO	interrupt
+0010        delay_ms_00000
+0010        ; { delay_ms ; function begin
+0010  08A6  	MOVF delay_ms_00000_arg_del, F
+0011  1D03  	BTFSS STATUS,Z
+0012  2814  	GOTO	label1
+0013  0008  	RETURN
+0014        label1
+0014  3099  	MOVLW 0x99
+0015        label2
+0015  0000  	NOP
+0016  0000  	NOP
+0017  3EFF  	ADDLW 0xFF
+0018  1D03  	BTFSS STATUS,Z
+0019  2815  	GOTO	label2
+001A  0000  	NOP
+001B  0BA6  	DECFSZ delay_ms_00000_arg_del, F
+001C  2814  	GOTO	label1
+001D  0008  	RETURN
+001E        ; } delay_ms function end
+
+001E        delay_s_00000
+001E        ; { delay_s ; function begin
+001E        label3
+001E  30FA  	MOVLW 0xFA
+001F  00A6  	MOVWF delay_ms_00000_arg_del
+0020  2010  	CALL delay_ms_00000
+0021  30FA  	MOVLW 0xFA
+0022  00A6  	MOVWF delay_ms_00000_arg_del
+0023  2010  	CALL delay_ms_00000
+0024  30FA  	MOVLW 0xFA
+0025  00A6  	MOVWF delay_ms_00000_arg_del
+0026  2010  	CALL delay_ms_00000
+0027  30FA  	MOVLW 0xFA
+0028  00A6  	MOVWF delay_ms_00000_arg_del
+0029  2010  	CALL delay_ms_00000
+002A  0BA5  	DECFSZ delay_s_00000_arg_del, F
+002B  281E  	GOTO	label3
+002C  0008  	RETURN
+002D        ; } delay_s function end
+
+002D        MotorSetSt_00014
+002D        ; { MotorSetState ; function begin
+002D  08AE  	MOVF MotorSetSt_00014_arg_Motor, F
+002E  1D03  	BTFSS STATUS,Z
+002F  2839  	GOTO	label4
+0030  3000  	MOVLW HIGH(gbl_ccp1con+D'0')
+0031  00B1  	MOVWF MotorSetSt_00014_1_Pointer_00017+D'1'
+0032  3017  	MOVLW LOW(gbl_ccp1con+D'0')
+0033  00B0  	MOVWF MotorSetSt_00014_1_Pointer_00017
+0034  3000  	MOVLW HIGH(gbl_ccpr1l+D'0')
+0035  00B3  	MOVWF MotorSetSt_00014_1_Pointer_00018+D'1'
+0036  3015  	MOVLW LOW(gbl_ccpr1l+D'0')
+0037  00B2  	MOVWF MotorSetSt_00014_1_Pointer_00018
+0038  2845  	GOTO	label5
+0039        label4
+0039  3000  	MOVLW HIGH(gbl_ccp2con+D'0')
+003A  00B6  	MOVWF CompTempVar634
+003B  301D  	MOVLW LOW(gbl_ccp2con+D'0')
+003C  00B0  	MOVWF MotorSetSt_00014_1_Pointer_00017
+003D  0836  	MOVF CompTempVar634, W
+003E  00B1  	MOVWF MotorSetSt_00014_1_Pointer_00017+D'1'
+003F  3000  	MOVLW HIGH(gbl_ccpr2l+D'0')
+0040  00B6  	MOVWF CompTempVar635
+0041  301B  	MOVLW LOW(gbl_ccpr2l+D'0')
+0042  00B2  	MOVWF MotorSetSt_00014_1_Pointer_00018
+0043  0836  	MOVF CompTempVar635, W
+0044  00B3  	MOVWF MotorSetSt_00014_1_Pointer_00018+D'1'
+0045        label5
+0045  082F  	MOVF MotorSetSt_00014_arg_State, W
+0046  3A00  	XORLW 0x00
+0047  1903  	BTFSC STATUS,Z
+0048  2850  	GOTO	label6
+0049  3A01  	XORLW 0x01
+004A  1903  	BTFSC STATUS,Z
+004B  2858  	GOTO	label7
+004C  3A03  	XORLW 0x03
+004D  1903  	BTFSC STATUS,Z
+004E  2864  	GOTO	label9
+004F  286F  	GOTO	label11
+0050        label6
+0050  1383  	BCF STATUS,IRP
+0051  1831  	BTFSC MotorSetSt_00014_1_Pointer_00017+D'1',0
+0052  1783  	BSF STATUS,IRP
+0053  0830  	MOVF MotorSetSt_00014_1_Pointer_00017, W
+0054  0084  	MOVWF FSR
+0055  3000  	MOVLW 0x00
+0056  0080  	MOVWF INDF
+0057  0008  	RETURN
+0058        label7
+0058  08AE  	MOVF MotorSetSt_00014_arg_Motor, F
+0059  1D03  	BTFSS STATUS,Z
+005A  285F  	GOTO	label8
+005B  30E6  	MOVLW 0xE6
+005C  00B4  	MOVWF MotorSetSt_00014_1_Duty_Cycle
+005D  01B5  	CLRF MotorSetSt_00014_1_Duty_Cycle+D'1'
+005E  286F  	GOTO	label11
+005F        label8
+005F  30CD  	MOVLW 0xCD
+0060  00B4  	MOVWF MotorSetSt_00014_1_Duty_Cycle
+0061  3001  	MOVLW 0x01
+0062  00B5  	MOVWF MotorSetSt_00014_1_Duty_Cycle+D'1'
+0063  286F  	GOTO	label11
+0064        label9
+0064  08AE  	MOVF MotorSetSt_00014_arg_Motor, F
+0065  1D03  	BTFSS STATUS,Z
+0066  286C  	GOTO	label10
+0067  30CD  	MOVLW 0xCD
+0068  00B4  	MOVWF MotorSetSt_00014_1_Duty_Cycle
+0069  3001  	MOVLW 0x01
+006A  00B5  	MOVWF MotorSetSt_00014_1_Duty_Cycle+D'1'
+006B  286F  	GOTO	label11
+006C        label10
+006C  30E6  	MOVLW 0xE6
+006D  00B4  	MOVWF MotorSetSt_00014_1_Duty_Cycle
+006E  01B5  	CLRF MotorSetSt_00014_1_Duty_Cycle+D'1'
+006F        label11
+006F  0E34  	SWAPF MotorSetSt_00014_1_Duty_Cycle, W
+0070  39F0  	ANDLW 0xF0
+0071  00B6  	MOVWF CompTempVar637
+0072  3030  	MOVLW 0x30
+0073  05B6  	ANDWF CompTempVar637, F
+0074  1383  	BCF STATUS,IRP
+0075  1831  	BTFSC MotorSetSt_00014_1_Pointer_00017+D'1',0
+0076  1783  	BSF STATUS,IRP
+0077  0830  	MOVF MotorSetSt_00014_1_Pointer_00017, W
+0078  0084  	MOVWF FSR
+0079  0836  	MOVF CompTempVar637, W
+007A  0080  	MOVWF INDF
+007B  0834  	MOVF MotorSetSt_00014_1_Duty_Cycle, W
+007C  00B6  	MOVWF CompTempVar638
+007D  0C35  	RRF MotorSetSt_00014_1_Duty_Cycle+D'1', W
+007E  00B7  	MOVWF CompTempVar639
+007F  0CB6  	RRF CompTempVar638, F
+0080  0CB7  	RRF CompTempVar639, F
+0081  0CB6  	RRF CompTempVar638, F
+0082  1383  	BCF STATUS,IRP
+0083  1833  	BTFSC MotorSetSt_00014_1_Pointer_00018+D'1',0
+0084  1783  	BSF STATUS,IRP
+0085  0832  	MOVF MotorSetSt_00014_1_Pointer_00018, W
+0086  0084  	MOVWF FSR
+0087  0836  	MOVF CompTempVar638, W
+0088  0080  	MOVWF INDF
+0089  1383  	BCF STATUS,IRP
+008A  1831  	BTFSC MotorSetSt_00014_1_Pointer_00017+D'1',0
+008B  1783  	BSF STATUS,IRP
+008C  0830  	MOVF MotorSetSt_00014_1_Pointer_00017, W
+008D  0084  	MOVWF FSR
+008E  300C  	MOVLW 0x0C
+008F  0480  	IORWF INDF, F
+0090  0008  	RETURN
+0091        ; } MotorSetState function end
+
+0091        UARTReadBy_00011
+0091        ; { UARTReadByte ; function begin
+0091        label12
+0091  1283  	BCF STATUS, RP0
+0092  1303  	BCF STATUS, RP1
+0093  1E8C  	BTFSS gbl_pir1,5
+0094  2891  	GOTO	label12
+0095  081A  	MOVF gbl_rcreg, W
+0096  00AD  	MOVWF CompTempVarRet629
+0097  0008  	RETURN
+0098        ; } UARTReadByte function end
+
+0098        UARTWriteB_00012
+0098        ; { UARTWriteByte ; function begin
+0098        label13
+0098  1E0C  	BTFSS gbl_pir1,4
+0099  2898  	GOTO	label13
+009A  082C  	MOVF UARTWriteB_00012_arg_Byte, W
+009B  0099  	MOVWF gbl_txreg
+009C  0008  	RETURN
+009D        ; } UARTWriteByte function end
+
+009D        UARTInit_00000
+009D        ; { UARTInit ; function begin
+009D  1683  	BSF STATUS, RP0
+009E  1787  	BSF gbl_trisc,7
+009F  1707  	BSF gbl_trisc,6
+00A0  1283  	BCF STATUS, RP0
+00A1  0825  	MOVF UARTInit_00000_arg_Baud_Rate, W
+00A2  1683  	BSF STATUS, RP0
+00A3  0099  	MOVWF gbl_spbrg
+00A4  3026  	MOVLW 0x26
+00A5  0098  	MOVWF gbl_txsta
+00A6  3090  	MOVLW 0x90
+00A7  1283  	BCF STATUS, RP0
+00A8  0098  	MOVWF gbl_rcsta
+00A9  0008  	RETURN
+00AA        ; } UARTInit function end
+
+00AA        MotorInit_00000
+00AA        ; { MotorInit ; function begin
+00AA  1683  	BSF STATUS, RP0
+00AB  1303  	BCF STATUS, RP1
+00AC  1087  	BCF gbl_trisc,1
+00AD  1107  	BCF gbl_trisc,2
+00AE  1283  	BCF STATUS, RP0
+00AF  1087  	BCF gbl_portc,1
+00B0  1107  	BCF gbl_portc,2
+00B1  30FF  	MOVLW 0xFF
+00B2  1683  	BSF STATUS, RP0
+00B3  0092  	MOVWF gbl_pr2
+00B4  3006  	MOVLW 0x06
+00B5  1283  	BCF STATUS, RP0
+00B6  0092  	MOVWF gbl_t2con
+00B7  0008  	RETURN
+00B8        ; } MotorInit function end
+
+00B8        ADCReadWor_00013
+00B8        ; { ADCReadWord ; function begin
+00B8  1283  	BCF STATUS, RP0
+00B9  1303  	BCF STATUS, RP1
+00BA  151F  	BSF gbl_adcon0,2
+00BB        label14
+00BB  191F  	BTFSC gbl_adcon0,2
+00BC  28BB  	GOTO	label14
+00BD  01A6  	CLRF CompTempVarRet622
+00BE  081E  	MOVF gbl_adresh, W
+00BF  00A5  	MOVWF CompTempVar628
+00C0  3000  	MOVLW 0x00
+00C1  05A6  	ANDWF CompTempVarRet622, F
+00C2  0825  	MOVF CompTempVar628, W
+00C3  39FF  	ANDLW 0xFF
+00C4  00A7  	MOVWF CompTempVarRet622+D'1'
+00C5  1683  	BSF STATUS, RP0
+00C6  081E  	MOVF gbl_adresl, W
+00C7  1283  	BCF STATUS, RP0
+00C8  04A6  	IORWF CompTempVarRet622, F
+00C9  0008  	RETURN
+00CA        ; } ADCReadWord function end
+
+00CA        ADCInit_00000
+00CA        ; { ADCInit ; function begin
+00CA  1683  	BSF STATUS, RP0
+00CB  1303  	BCF STATUS, RP1
+00CC  1405  	BSF gbl_trisa,0
+00CD  308E  	MOVLW 0x8E
+00CE  009F  	MOVWF gbl_adcon1
+00CF  3041  	MOVLW 0x41
+00D0  1283  	BCF STATUS, RP0
+00D1  009F  	MOVWF gbl_adcon0
+00D2  0008  	RETURN
+00D3        ; } ADCInit function end
+
+
+00FA        _startup
+00FA  118A  	BCF PCLATH,3
+00FB  120A  	BCF PCLATH,4
+00FC  28D3  	GOTO	main
+
+2007  3F71  	DW 0x3F71

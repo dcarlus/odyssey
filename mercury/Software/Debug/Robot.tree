@@ -1,0 +1,21 @@
+// SourceBoost Linker Call Tree Dump
+
+_startup:"NoSourceFile",line = 0
+{  main:"C:\Documents and Settings\AR\Bureau\Firmware\Main.c",line = 56
+  {    UARTInit:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 8
+    {    }    ADCInit:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_ADC.c",line = 8
+    {    }    ADCReadWord:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_ADC.c",line = 18
+    {    }    ADCReadWord:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_ADC.c",line = 18
+    {    }    UARTReadByte:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 20
+    {    }    ADCReadWord:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_ADC.c",line = 18
+    {    }    delay_s:"NoSourceFile",line = 0
+    {      delay_ms:"NoSourceFile",line = 0
+      {      }      delay_ms:"NoSourceFile",line = 0
+      {      }      delay_ms:"NoSourceFile",line = 0
+      {      }      delay_ms:"NoSourceFile",line = 0
+      {      }    }    UARTWriteByte:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 28
+    {    }    UARTWriteByte:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 28
+    {    }  }}interrupt:"C:\Documents and Settings\AR\Bureau\Firmware\Main.c",line = 27
+{  UARTReadByte:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 20
+  {  }}UARTReadByte:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 20
+{}
