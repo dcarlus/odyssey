@@ -207,29 +207,30 @@ label7
 	MOVF MotorSetSt_00014_arg_Motor, F
 	BTFSS STATUS,Z
 	GOTO	label8
-	MOVLW 0xE6
+	MOVLW 0xC8
 	MOVWF MotorSetSt_00014_1_Duty_Cycle
 	CLRF MotorSetSt_00014_1_Duty_Cycle+D'1'
 	GOTO	label11
 label8
-	MOVLW 0xCD
+	MOVLW 0x20
 	MOVWF MotorSetSt_00014_1_Duty_Cycle
-	MOVLW 0x01
+	MOVLW 0x03
 	MOVWF MotorSetSt_00014_1_Duty_Cycle+D'1'
 	GOTO	label11
 label9
 	MOVF MotorSetSt_00014_arg_Motor, F
 	BTFSS STATUS,Z
 	GOTO	label10
-	MOVLW 0xCD
+	MOVLW 0xF4
 	MOVWF MotorSetSt_00014_1_Duty_Cycle
 	MOVLW 0x01
 	MOVWF MotorSetSt_00014_1_Duty_Cycle+D'1'
 	GOTO	label11
 label10
-	MOVLW 0xE6
+	MOVLW 0x2C
 	MOVWF MotorSetSt_00014_1_Duty_Cycle
-	CLRF MotorSetSt_00014_1_Duty_Cycle+D'1'
+	MOVLW 0x01
+	MOVWF MotorSetSt_00014_1_Duty_Cycle+D'1'
 label11
 	SWAPF MotorSetSt_00014_1_Duty_Cycle, W
 	ANDLW 0xF0
@@ -267,7 +268,7 @@ label11
 	RETURN
 ; } MotorSetState function end
 
-	ORG 0x00000091
+	ORG 0x00000092
 UARTReadBy_00011
 ; { UARTReadByte ; function begin
 label12
@@ -280,7 +281,7 @@ label12
 	RETURN
 ; } UARTReadByte function end
 
-	ORG 0x00000098
+	ORG 0x00000099
 UARTWriteB_00012
 ; { UARTWriteByte ; function begin
 label13
@@ -291,7 +292,7 @@ label13
 	RETURN
 ; } UARTWriteByte function end
 
-	ORG 0x0000009D
+	ORG 0x0000009E
 UARTInit_00000
 ; { UARTInit ; function begin
 	BSF STATUS, RP0
@@ -309,7 +310,7 @@ UARTInit_00000
 	RETURN
 ; } UARTInit function end
 
-	ORG 0x000000AA
+	ORG 0x000000AB
 MotorInit_00000
 ; { MotorInit ; function begin
 	BSF STATUS, RP0
@@ -328,7 +329,7 @@ MotorInit_00000
 	RETURN
 ; } MotorInit function end
 
-	ORG 0x000000B8
+	ORG 0x000000B9
 ADCReadWor_00013
 ; { ADCReadWord ; function begin
 	BCF STATUS, RP0
@@ -352,7 +353,7 @@ label14
 	RETURN
 ; } ADCReadWord function end
 
-	ORG 0x000000CA
+	ORG 0x000000CB
 ADCInit_00000
 ; { ADCInit ; function begin
 	BSF STATUS, RP0
@@ -366,12 +367,14 @@ ADCInit_00000
 	RETURN
 ; } ADCInit function end
 
-	ORG 0x000000D3
+	ORG 0x000000D4
 main
 ; { main ; function begin
 	BSF STATUS, RP0
 	BCF STATUS, RP1
 	CLRF gbl_trisb
+	BCF STATUS, RP0
+	BCF gbl_portb,7
 	CALL MotorInit_00000
 	CALL ADCInit_00000
 	MOVLW 0x01
@@ -412,12 +415,12 @@ label16
 	GOTO	label16
 ; } main function end
 
-	ORG 0x000000FA
+	ORG 0x000000FD
 _startup
 	BCF PCLATH,3
 	BCF PCLATH,4
 	GOTO	main
-	ORG 0x000000FD
+	ORG 0x00000100
 interrupt
 ; { interrupt ; function begin
 	BCF STATUS, RP0

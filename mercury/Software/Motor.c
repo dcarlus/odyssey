@@ -5,10 +5,11 @@
 #include <system.h>
 #include "Motor.h"
 
-// The duty cycle value to make the motor rotate in one direction
-#define DUTY_CYCLE_DIRECTION_1 230
-// The duty cycle value to make the motor rotate in the opposite direction
-#define DUTY_CYCLE_DIRECTION_2 461
+// Duty cycle values to make each motor rotate forward and backward
+#define MOTOR_LEFT_DUTY_CYCLE_FORWARD 200
+#define MOTOR_LEFT_DUTY_CYCLE_BACKWARD 500
+#define MOTOR_RIGHT_DUTY_CYCLE_FORWARD 800
+#define MOTOR_RIGHT_DUTY_CYCLE_BACKWARD 300
 
 void MotorInit(void)
 {
@@ -50,13 +51,13 @@ void MotorSetState(TMotor Motor, TMotorState State)
 			return;
 			
 		case Forward:
-			if (Motor == Left) Duty_Cycle = DUTY_CYCLE_DIRECTION_1;
-			else Duty_Cycle = DUTY_CYCLE_DIRECTION_2;
+			if (Motor == Left) Duty_Cycle = MOTOR_LEFT_DUTY_CYCLE_FORWARD;
+			else Duty_Cycle = MOTOR_RIGHT_DUTY_CYCLE_FORWARD;
 			break;
 			
 		case Backward:
-			if (Motor == Left) Duty_Cycle = DUTY_CYCLE_DIRECTION_2;
-			else Duty_Cycle = DUTY_CYCLE_DIRECTION_1;
+			if (Motor == Left) Duty_Cycle = MOTOR_LEFT_DUTY_CYCLE_BACKWARD;
+			else Duty_Cycle = MOTOR_RIGHT_DUTY_CYCLE_BACKWARD;
 			break;
 	}
 	

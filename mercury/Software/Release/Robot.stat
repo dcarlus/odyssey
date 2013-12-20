@@ -7,9 +7,9 @@ UARTInit(unsigned char):"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UAR
 UARTReadByte(void):"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 23,ram = 1.0,rom = 7;
 UARTWriteByte(unsigned char):"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 31,ram = 0.0,rom = 5;
 interrupt(void):"C:\Documents and Settings\AR\Bureau\odyssey\mercury\Software\Main.c",line = 30,ram = 4.0,rom = 78;
-main(void):"C:\Documents and Settings\AR\Bureau\odyssey\mercury\Software\Main.c",line = 85,ram = 0.0,rom = 39;
-MotorInit(void):"C:\Documents and Settings\AR\Bureau\Firmware\Motor.c",line = 16,ram = 0.0,rom = 14;
-MotorSetState(unsigned char,unsigned char):"C:\Documents and Settings\AR\Bureau\Firmware\Motor.c",line = 34,ram = 12.0,rom = 100;
+main(void):"C:\Documents and Settings\AR\Bureau\odyssey\mercury\Software\Main.c",line = 85,ram = 0.0,rom = 41;
+MotorInit(void):"C:\Documents and Settings\AR\Bureau\odyssey\mercury\Software\Motor.c",line = 26,ram = 0.0,rom = 14;
+MotorSetState(unsigned char,unsigned char):"C:\Documents and Settings\AR\Bureau\odyssey\mercury\Software\Motor.c",line = 44,ram = 12.0,rom = 101;
 delay_ms(unsigned char):"NoSourceFile",line = 0,ram = 0.0,rom = 14;
 delay_s(unsigned char):"NoSourceFile",line = 0,ram = 1.0,rom = 15;
 _startup(void):"NoSourceFile",line = 0,ram = 0.0,rom = 3;

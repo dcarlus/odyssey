@@ -2,11 +2,11 @@
 
 _startup:"NoSourceFile",line = 0
 {  main:"C:\Documents and Settings\AR\Bureau\odyssey\mercury\Software\Main.c",line = 82
-  {    MotorInit:"C:\Documents and Settings\AR\Bureau\Firmware\Motor.c",line = 13
+  {    MotorInit:"C:\Documents and Settings\AR\Bureau\odyssey\mercury\Software\Motor.c",line = 23
     {    }    ADCInit:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_ADC.c",line = 8
     {    }    UARTInit:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 8
-    {    }    MotorSetState:"C:\Documents and Settings\AR\Bureau\Firmware\Motor.c",line = 28
-    {    }    MotorSetState:"C:\Documents and Settings\AR\Bureau\Firmware\Motor.c",line = 28
+    {    }    MotorSetState:"C:\Documents and Settings\AR\Bureau\odyssey\mercury\Software\Motor.c",line = 38
+    {    }    MotorSetState:"C:\Documents and Settings\AR\Bureau\odyssey\mercury\Software\Motor.c",line = 38
     {    }    ADCReadWord:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_ADC.c",line = 18
     {    }    ADCReadWord:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_ADC.c",line = 18
     {    }    UARTReadByte:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 20
@@ -18,9 +18,9 @@ _startup:"NoSourceFile",line = 0
       {      }      delay_ms:"NoSourceFile",line = 0
       {      }    }  }}interrupt:"C:\Documents and Settings\AR\Bureau\odyssey\mercury\Software\Main.c",line = 28
 {  UARTReadByte:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 20
-  {  }  MotorSetState:"C:\Documents and Settings\AR\Bureau\Firmware\Motor.c",line = 28
+  {  }  MotorSetState:"C:\Documents and Settings\AR\Bureau\odyssey\mercury\Software\Motor.c",line = 38
   {  }  UARTWriteByte:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 28
   {  }  UARTWriteByte:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 28
   {  }}UARTReadByte:"C:\Documents and Settings\AR\Bureau\Firmware\Driver_UART.c",line = 20
-{}MotorSetState:"C:\Documents and Settings\AR\Bureau\Firmware\Motor.c",line = 28
+{}MotorSetState:"C:\Documents and Settings\AR\Bureau\odyssey\mercury\Software\Motor.c",line = 38
 {}

@@ -29,7 +29,11 @@
 #ifdef DOXYGEN
 	void RobotInit(void);
 #else
-	#define RobotInit() trisb = 0 // Configure LED port as output
+	#define RobotInit() \
+	{ \
+		trisb = 0; /* Configure LED port as output */ \
+		RobotLedOff(); \
+	} 
 #endif
 
 /** Light the green LED. */

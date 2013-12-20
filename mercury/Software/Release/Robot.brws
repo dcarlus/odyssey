@@ -61,8 +61,6 @@ D	C:\Program Files\SourceBoost\Include\pic16F876.h	221;"	d
 DATA_ADDRESS	C:\Program Files\SourceBoost\Include\pic16F876.h	226;"	d
 DC	C:\Program Files\SourceBoost\Include\pic16F876.h	82;"	d
 DTASK_HANDLE	C:\Program Files\SourceBoost\Include\novo.h	73;"	t
-DUTY_CYCLE_DIRECTION_1	Motor.c	9;"	d	file:
-DUTY_CYCLE_DIRECTION_2	Motor.c	11;"	d	file:
 D_A	C:\Program Files\SourceBoost\Include\pic16F876.h	225;"	d
 EEADR	C:\Program Files\SourceBoost\Include\pic16F876.h	69;"	d
 EEADRH	C:\Program Files\SourceBoost\Include\pic16F876.h	71;"	d
@@ -107,8 +105,12 @@ LOBYTE	C:\Program Files\SourceBoost\Include\boostc.h	40;"	d
 Left	Motor.h	13;"	e
 MAKESHORT	C:\Program Files\SourceBoost\Include\boostc.h	33;"	d
 MAX_EQ_INDEX	C:\Program Files\SourceBoost\Include\novo.h	89;"	d
-MotorInit	Motor.c	13;"	f
-MotorSetState	Motor.c	28;"	f
+MOTOR_LEFT_DUTY_CYCLE_BACKWARD	Motor.c	10;"	d	file:
+MOTOR_LEFT_DUTY_CYCLE_FORWARD	Motor.c	9;"	d	file:
+MOTOR_RIGHT_DUTY_CYCLE_BACKWARD	Motor.c	12;"	d	file:
+MOTOR_RIGHT_DUTY_CYCLE_FORWARD	Motor.c	11;"	d	file:
+MotorInit	Motor.c	14;"	f
+MotorSetState	Motor.c	29;"	f
 NOT_A	C:\Program Files\SourceBoost\Include\pic16F876.h	223;"	d
 NOT_ADDRESS	C:\Program Files\SourceBoost\Include\pic16F876.h	224;"	d
 NOT_BO	C:\Program Files\SourceBoost\Include\pic16F876.h	205;"	d
@@ -177,8 +179,8 @@ RX9D	C:\Program Files\SourceBoost\Include\pic16F876.h	157;"	d
 R_W	C:\Program Files\SourceBoost\Include\pic16F876.h	235;"	d
 Right	Motor.h	13;"	e
 RobotInit	Robot.h	32;"	d
-RobotLedOff	Robot.h	46;"	d
-RobotLedOn	Robot.h	39;"	d
+RobotLedOff	Robot.h	50;"	d
+RobotLedOn	Robot.h	43;"	d
 S	C:\Program Files\SourceBoost\Include\pic16F876.h	229;"	d
 SEN	C:\Program Files\SourceBoost\Include\pic16F876.h	216;"	d
 SLEEP_QUEUE_HEAD	C:\Program Files\SourceBoost\Include\novo.h	80;"	d
