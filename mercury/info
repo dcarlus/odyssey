@@ -1,1 +1,4 @@
 Folder containing all the sources and resources of the Mercury branch.
+
+The schematic was drawn with gschem 1.6.1 from the gEDA project (http://www.geda-project.org/).
+The firmware was programmed with SourceBoost 7.20 (http://www.sourceboost.com/).
