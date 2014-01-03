@@ -11,7 +11,7 @@
                                                            /** CONFIGURATION **/
 /** @brief  Configure the camera parameters. */
 static void AppOMXContext_ConfigureCamera(AppOMXContext* self) {
-    BasicOMXHandler* cameraHandler = (self -> camera).basic ;
+    BasicOMXHandler* cameraHandler = &(self -> camera).basic ;
     cameraHandler -> configure(cameraHandler) ;
 }
 
@@ -19,17 +19,17 @@ static void AppOMXContext_ConfigureCamera(AppOMXContext* self) {
                                                                  /** GETTERS **/
 /** @brief  Get the camera OMX_HANDLETYPE structure. */
 static OMX_HANDLETYPE* AppOMXContext_GetCameraHandleType(AppOMXContext* self) {
-    return &(((self -> camera).basic) -> type) ;
+    return &(((self -> camera).basic).type) ;
 }
 
 /** @brief  Get the encoder OMX_HANDLETYPE structure. */
 static OMX_HANDLETYPE* AppOMXContext_GetEncoderHandleType(AppOMXContext* self) {
-    return &(((self -> encoder).basic) -> type) ;
+    return &(((self -> encoder).basic).type) ;
 }
 
 /** @brief  Get the null sink OMX_HANDLETYPE structure. */
 static OMX_HANDLETYPE* AppOMXContext_GetNullSinkHandleType(AppOMXContext* self) {
-    return &((self -> nullSink) -> type) ;
+    return &((self -> nullSink).type) ;
 }
 
 /** @brief  Get the handler locker semaphore of the application context. */
@@ -78,9 +78,9 @@ static void _AppOMXContext_Init(AppOMXContext* self) {
 
 
     // Initialize data
-    CameraBufferHandler_Init(&(self -> camera)) ;
-    EncoderBufferHandler_Init(&(self -> encoder)) ;
-    self -> nullSink = NullSinkHandler_New() ;
+    self -> camera = CameraBufferHandler_Construct() ;
+    self -> encoder = EncoderBufferHandler_Construct() ;
+    self -> nullSink = NullSinkHandler_Construct() ;
 }
 
 
@@ -92,15 +92,8 @@ AppOMXContext AppOMXContext_Construct() {
 }
 
 
-/** @brief  Delete the AppOMXContext. */
-void AppOMXContext_Destruct(AppOMXContext* self) {
-    BasicOMXHandler_Destruct(self -> nullSink) ;
-}
-
-
 /** @brief  memset() on an AppOMXContext with the right initialization*/
 void* AppOMXContext_Memset(AppOMXContext* self, int c, size_t n) {
-    AppOMXContext_Destruct(self) ;
     void* result = memset(self, c, n) ;
     _AppOMXContext_Init(self) ;
     return result ;

@@ -19,7 +19,4 @@ void CameraBufferHandler_Init(BufferOMXHandler* self) ;
 /** @brief  Create a new CameraBufferHandler. */
 BufferOMXHandler CameraBufferHandler_Construct() ;
 
-/** @brief  Delete the CameraBufferHandler. */
-void CameraBufferHandler_Destruct(BufferOMXHandler* self) ;
-
 #endif

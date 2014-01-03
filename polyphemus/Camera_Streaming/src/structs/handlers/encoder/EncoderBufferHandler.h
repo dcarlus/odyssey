@@ -13,13 +13,7 @@
 
 #include "../BufferOMXHandler.h"
 
-/** @brief  Initialize a BufferOMXHandler. */
-void EncoderBufferHandler_Init(BufferOMXHandler* self) ;
-
 /** @brief  Create a new EncoderBufferHandler. */
 BufferOMXHandler EncoderBufferHandler_Construct() ;
-
-/** @brief  Delete the EncoderBufferHandler. */
-void EncoderBufferHandler_Destruct(BufferOMXHandler* self) ;
 
 #endif

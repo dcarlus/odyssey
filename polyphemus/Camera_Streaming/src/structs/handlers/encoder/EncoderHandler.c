@@ -28,11 +28,3 @@ BasicOMXHandler EncoderHandler_Construct() {
     _EncoderHandler_Init(&handler) ;
     return handler ;
 }
-
-
-/** @brief  Create a new EncoderHandler. */
-BasicOMXHandler* EncoderHandler_New() {
-    BasicOMXHandler* handler = malloc(sizeof(BasicOMXHandler)) ;
-    _EncoderHandler_Init(handler) ;
-    return handler ;
-}

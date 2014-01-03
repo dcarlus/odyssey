@@ -14,7 +14,4 @@
 /** @brief  Create a new NullSinkHandler. */
 BasicOMXHandler NullSinkHandler_Construct() ;
 
-/** @brief  Create a new NullSinkHandler. */
-BasicOMXHandler* NullSinkHandler_New() ;
-
 #endif

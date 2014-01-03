@@ -33,6 +33,10 @@ static void _BasicOMXHandler_Init(BasicOMXHandler* self) {
 
     // Setters
     self -> setReady = BasicOMXHandler_SetAsReady ;
+
+
+    // Data
+    self -> readiness = 0 ;
 }
 
 

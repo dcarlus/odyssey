@@ -14,7 +14,4 @@
 /** @brief  Create a new EncoderHandler. */
 BasicOMXHandler EncoderHandler_Construct() ;
 
-/** @brief  Create a new EncoderHandler. */
-BasicOMXHandler* EncoderHandler_New() ;
-
 #endif

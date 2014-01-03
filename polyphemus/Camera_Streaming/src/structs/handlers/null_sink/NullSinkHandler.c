@@ -28,11 +28,3 @@ BasicOMXHandler NullSinkHandler_Construct() {
     _NullSinkHandler_Init(&handler) ;
     return handler ;
 }
-
-
-/** @brief  Create a new NullSinkHandler. */
-BasicOMXHandler* NullSinkHandler_New() {
-    BasicOMXHandler* handler = malloc(sizeof(BasicOMXHandler)) ;
-    _NullSinkHandler_Init(handler) ;
-    return handler ;
-}

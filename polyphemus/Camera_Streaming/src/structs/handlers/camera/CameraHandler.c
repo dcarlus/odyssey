@@ -15,7 +15,7 @@
  * @author  Tuomas Jormola
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
-static void _BasicOMXHandler_SetCallbackOnCameraReady(BasicOMXHandler* self) {
+static void _CameraHandler_SetCallbackOnCameraReady(BasicOMXHandler* self) {
     OMX_HANDLETYPE camera = self -> type ;
 
     OMX_CONFIG_REQUESTCALLBACKTYPE cbtype ;
@@ -37,7 +37,7 @@ static void _BasicOMXHandler_SetCallbackOnCameraReady(BasicOMXHandler* self) {
  * @author  Tuomas Jormola
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
-static void _BasicOMXHandler_SetCameraDeviceNumber(BasicOMXHandler* self) {
+static void _CameraHandler_SetCameraDeviceNumber(BasicOMXHandler* self) {
     OMX_HANDLETYPE camera = self -> type ;
 
     OMX_PARAM_U32TYPE device ;
@@ -57,7 +57,7 @@ static void _BasicOMXHandler_SetCameraDeviceNumber(BasicOMXHandler* self) {
  * @author  Tuomas Jormola
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
-static void _BasicOMXHandler_ConfigureCameraPreviewFormat(BasicOMXHandler* self) {
+static void _CameraHandler_ConfigureCameraPreviewFormat(BasicOMXHandler* self) {
     OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
 
@@ -93,7 +93,7 @@ static void _BasicOMXHandler_ConfigureCameraPreviewFormat(BasicOMXHandler* self)
  * @author  Tuomas Jormola
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
-static void _BasicOMXHandler_ConfigureCameraVideoOutputFormat(BasicOMXHandler* self) {
+static void _CameraHandler_ConfigureCameraVideoOutputFormat(BasicOMXHandler* self) {
     OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
 
@@ -111,15 +111,255 @@ static void _BasicOMXHandler_ConfigureCameraVideoOutputFormat(BasicOMXHandler* s
 }
 
 
-/**  @brief   Configure the camera output formats (preview and video). */
-static void CameraHandler_Configure(BasicOMXHandler* self) {
-    _BasicOMXHandler_SetCallbackOnCameraReady(self) ;
-    _BasicOMXHandler_SetCameraDeviceNumber(self) ;
-    _BasicOMXHandler_ConfigureCameraPreviewFormat(self) ;
-    _BasicOMXHandler_ConfigureCameraVideoOutputFormat(self) ;
+/**
+ * @brief   Configure frame rate.
+ * @author  Tuomas Jormola
+ * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
+ */
+static void _CameraHandler_SetFramerate(BasicOMXHandler* self) {
+    OMX_ERRORTYPE error ;
+    OMX_HANDLETYPE camera = self -> type ;
+    OMX_PARAM_PORTDEFINITIONTYPE camera_portdef ;
+    OMX_INIT_STRUCTURE(camera_portdef) ;
+
+    OMX_CONFIG_FRAMERATETYPE framerate ;
+    OMX_INIT_STRUCTURE(framerate) ;
+    framerate.nPortIndex = 70 ;
+    framerate.xEncodeFramerate = camera_portdef.format.video.xFramerate ;
+
+    error = OMX_SetConfig(camera, OMX_IndexConfigVideoFramerate, &framerate) ;
+    if (error != OMX_ErrorNone)
+        omx_die(error, "Failed to set framerate configuration for camera preview output port 70") ;
+
+    framerate.nPortIndex = 71 ;
+    error = OMX_SetConfig(camera, OMX_IndexConfigVideoFramerate, &framerate) ;
+    if (error != OMX_ErrorNone)
+        omx_die(error, "Failed to set framerate configuration for camera video output port 71") ;
 }
 
 
+/**
+ * @brief   Configure sharpness.
+ * @author  Tuomas Jormola
+ * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
+ */
+static void _CameraHandler_SetSharpness(BasicOMXHandler* self) {
+    OMX_ERRORTYPE error ;
+    OMX_HANDLETYPE camera = self -> type ;
+
+    OMX_CONFIG_SHARPNESSTYPE sharpness ;
+    OMX_INIT_STRUCTURE(sharpness) ;
+    sharpness.nPortIndex = OMX_ALL ;
+    sharpness.nSharpness = CAM_SHARPNESS ;
+
+    error = OMX_SetConfig(camera, OMX_IndexConfigCommonSharpness, &sharpness) ;
+    if (error != OMX_ErrorNone)
+        omx_die(error, "Failed to set camera sharpness configuration") ;
+}
+
+
+/**
+ * @brief   Configure contrast.
+ * @author  Tuomas Jormola
+ * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
+ */
+static void _CameraHandler_SetContrast(BasicOMXHandler* self) {
+    OMX_ERRORTYPE error ;
+    OMX_HANDLETYPE camera = self -> type ;
+
+    OMX_CONFIG_CONTRASTTYPE contrast ;
+    OMX_INIT_STRUCTURE(contrast) ;
+    contrast.nPortIndex = OMX_ALL ;
+    contrast.nContrast = CAM_CONTRAST ;
+
+    error = OMX_SetConfig(camera, OMX_IndexConfigCommonContrast, &contrast) ;
+    if (error != OMX_ErrorNone)
+        omx_die(error, "Failed to set camera contrast configuration") ;
+}
+
+
+/**
+ * @brief   Configure saturation.
+ * @author  Tuomas Jormola
+ * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
+ */
+static void _CameraHandler_SetSaturation(BasicOMXHandler* self) {
+    OMX_ERRORTYPE error ;
+    OMX_HANDLETYPE camera = self -> type ;
+
+    OMX_CONFIG_SATURATIONTYPE saturation ;
+    OMX_INIT_STRUCTURE(saturation) ;
+    saturation.nPortIndex = OMX_ALL ;
+    saturation.nSaturation = CAM_SATURATION ;
+
+    error = OMX_SetConfig(camera, OMX_IndexConfigCommonSaturation, &saturation) ;
+    if (error != OMX_ErrorNone)
+        omx_die(error, "Failed to set camera saturation configuration") ;
+}
+
+
+/**
+ * @brief   Configure brightness.
+ * @author  Tuomas Jormola
+ * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
+ */
+static void _CameraHandler_SetBrightness(BasicOMXHandler* self) {
+    OMX_ERRORTYPE error ;
+    OMX_HANDLETYPE camera = self -> type ;
+
+    OMX_CONFIG_BRIGHTNESSTYPE brightness ;
+    OMX_INIT_STRUCTURE(brightness) ;
+    brightness.nPortIndex = OMX_ALL ;
+    brightness.nBrightness = CAM_BRIGHTNESS ;
+
+    error = OMX_SetConfig(camera, OMX_IndexConfigCommonBrightness, &brightness) ;
+    if (error != OMX_ErrorNone)
+        omx_die(error, "Failed to set camera brightness configuration") ;
+}
+
+
+/**
+ * @brief   Configure exposure.
+ * @author  Tuomas Jormola
+ * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
+ */
+static void _CameraHandler_SetExposure(BasicOMXHandler* self) {
+    OMX_ERRORTYPE error ;
+    OMX_HANDLETYPE camera = self -> type ;
+
+    OMX_CONFIG_EXPOSUREVALUETYPE exposure_value ;
+    OMX_INIT_STRUCTURE(exposure_value) ;
+    exposure_value.nPortIndex = OMX_ALL ;
+    exposure_value.xEVCompensation = CAM_EXPOSURE_VALUE_COMPENSTAION ;
+    exposure_value.bAutoSensitivity = CAM_EXPOSURE_AUTO_SENSITIVITY ;
+    exposure_value.nSensitivity = CAM_EXPOSURE_ISO_SENSITIVITY ;
+
+    error = OMX_SetConfig(camera, OMX_IndexConfigCommonExposureValue, &exposure_value) ;
+    if (error != OMX_ErrorNone)
+        omx_die(error, "Failed to set camera exposure value configuration") ;
+}
+
+
+/**
+ * @brief   Configure image stabilization.
+ * @author  Tuomas Jormola
+ * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
+ */
+static void _CameraHandler_SetFrameStabilization(BasicOMXHandler* self) {
+    OMX_ERRORTYPE error ;
+    OMX_HANDLETYPE camera = self -> type ;
+
+    OMX_CONFIG_FRAMESTABTYPE frame_stabilisation_control ;
+    OMX_INIT_STRUCTURE(frame_stabilisation_control) ;
+    frame_stabilisation_control.nPortIndex = OMX_ALL ;
+    frame_stabilisation_control.bStab = CAM_FRAME_STABILISATION ;
+
+    error = OMX_SetConfig(camera, OMX_IndexConfigCommonFrameStabilisation, &frame_stabilisation_control) ;
+    if (error != OMX_ErrorNone)
+        omx_die(error, "Failed to set camera frame frame stabilisation control configuration") ;
+}
+
+
+/**
+ * @brief   Configure white balance.
+ * @author  Tuomas Jormola
+ * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
+ */
+static void _CameraHandler_SetWhiteBalance(BasicOMXHandler* self) {
+    OMX_ERRORTYPE error ;
+    OMX_HANDLETYPE camera = self -> type ;
+
+    OMX_CONFIG_WHITEBALCONTROLTYPE white_balance_control ;
+    OMX_INIT_STRUCTURE(white_balance_control) ;
+    white_balance_control.nPortIndex = OMX_ALL ;
+    white_balance_control.eWhiteBalControl = CAM_WHITE_BALANCE_CONTROL ;
+
+    error = OMX_SetConfig(camera, OMX_IndexConfigCommonWhiteBalance, &white_balance_control) ;
+    if (error != OMX_ErrorNone)
+        omx_die(error, "Failed to set camera frame white balance control configuration") ;
+}
+
+
+/**
+ * @brief   Configure image filter.
+ * @author  Tuomas Jormola
+ * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
+ */
+static void _CameraHandler_SetImageFilter(BasicOMXHandler* self) {
+    OMX_ERRORTYPE error ;
+    OMX_HANDLETYPE camera = self -> type ;
+
+    OMX_CONFIG_IMAGEFILTERTYPE image_filter ;
+    OMX_INIT_STRUCTURE(image_filter) ;
+    image_filter.nPortIndex = OMX_ALL ;
+    image_filter.eImageFilter = CAM_IMAGE_FILTER ;
+
+    error = OMX_SetConfig(camera, OMX_IndexConfigCommonImageFilter, &image_filter) ;
+    if (error != OMX_ErrorNone)
+        omx_die(error, "Failed to set camera image filter configuration") ;
+}
+
+
+/**
+ * @brief   Configure image mirror.
+ * @author  Tuomas Jormola
+ * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
+ */
+static void _CameraHandler_SetMirror(BasicOMXHandler* self) {
+    OMX_ERRORTYPE error ;
+    OMX_HANDLETYPE camera = self -> type ;
+
+    OMX_MIRRORTYPE eMirror = OMX_MirrorNone ;
+    if (CAM_FLIP_HORIZONTAL && !CAM_FLIP_VERTICAL)
+        eMirror = OMX_MirrorHorizontal ;
+    else if (!CAM_FLIP_HORIZONTAL && CAM_FLIP_VERTICAL)
+        eMirror = OMX_MirrorVertical ;
+    else if (CAM_FLIP_HORIZONTAL && CAM_FLIP_VERTICAL)
+        eMirror = OMX_MirrorBoth ;
+
+    OMX_CONFIG_MIRRORTYPE mirror ;
+    OMX_INIT_STRUCTURE(mirror) ;
+    mirror.nPortIndex = 71 ;
+    mirror.eMirror = eMirror ;
+
+    error = OMX_SetConfig(camera, OMX_IndexConfigCommonMirror, &mirror) ;
+    if (error != OMX_ErrorNone)
+        omx_die(error, "Failed to set mirror configuration for camera video output port 71") ;
+}
+
+
+/**
+ * @brief   Ensure camera is ready.
+ * @author  Tuomas Jormola
+ * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
+ */
+static void _CameraHandler_WaitCameraIsReady(BasicOMXHandler* self) {
+    while (!(self -> readiness))
+        usleep(10000) ;
+}
+
+
+/**  @brief   Configure the camera output formats (preview and video). */
+static void CameraHandler_Configure(BasicOMXHandler* self) {
+    _CameraHandler_SetCallbackOnCameraReady(self) ;
+    _CameraHandler_SetCameraDeviceNumber(self) ;
+    _CameraHandler_ConfigureCameraPreviewFormat(self) ;
+    _CameraHandler_ConfigureCameraVideoOutputFormat(self) ;
+
+    // Set camera capture parameters
+    _CameraHandler_SetFramerate(self) ;
+    _CameraHandler_SetSharpness(self) ;
+    _CameraHandler_SetContrast(self) ;
+    _CameraHandler_SetSaturation(self) ;
+    _CameraHandler_SetBrightness(self) ;
+    _CameraHandler_SetExposure(self) ;
+    _CameraHandler_SetFrameStabilization(self) ;
+    _CameraHandler_SetWhiteBalance(self) ;
+    _CameraHandler_SetImageFilter(self) ;
+    _CameraHandler_SetMirror(self) ;
+
+    _CameraHandler_WaitCameraIsReady(self) ;
+}
 
                                                              /** CONSTRUCTOR **/
 /** @brief  Initialize a CameraHandler. */
@@ -132,13 +372,5 @@ static void _CameraHandler_Init(BasicOMXHandler* self) {
 BasicOMXHandler CameraHandler_Construct() {
     BasicOMXHandler handler = BasicOMXHandler_Construct() ;
     _CameraHandler_Init(&handler) ;
-    return handler ;
-}
-
-
-/** @brief  Create a new CameraHandler. */
-BasicOMXHandler* CameraHandler_New() {
-    BasicOMXHandler* handler = malloc(sizeof(BasicOMXHandler)) ;
-    _CameraHandler_Init(handler) ;
     return handler ;
 }

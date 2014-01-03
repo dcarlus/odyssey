@@ -15,7 +15,7 @@
 /** @brief	An OMX handler with buffer (in or out) */
 typedef struct BufferOMXHandler {
     /** DATA **/
-	BasicOMXHandler*        basic ;
+	BasicOMXHandler         basic ;
 	OMX_BUFFERHEADERTYPE*   bufferHeader ;
 
     /** METHODS **/

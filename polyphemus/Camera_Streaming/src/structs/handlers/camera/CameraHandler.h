@@ -14,7 +14,4 @@
 /** @brief  Create a new CameraHandler. */
 BasicOMXHandler CameraHandler_Construct() ;
 
-/** @brief  Create a new CameraHandler. */
-BasicOMXHandler* CameraHandler_New() ;
-
 #endif
