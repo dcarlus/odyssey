@@ -8,7 +8,7 @@
                                                                  /** GETTERS **/
 /** @brief  Get the BasicOMXHandler structure of this OMX handler. */
 static BasicOMXHandler* BufferOMXHandler_GetBasicOMXHandler(BufferOMXHandler* self) {
-    return &(self -> basic) ;
+    return (self -> basic) ;
 }
 
 /** @brief  Get the BUFFERHEADERTYPE structure of this OMX handler. */

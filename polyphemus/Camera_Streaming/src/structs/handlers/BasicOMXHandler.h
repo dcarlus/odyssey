@@ -23,6 +23,8 @@ typedef struct BasicOMXHandler {
 	char                readiness ;
 
     /** METHODS **/
+    void                (*configure)(struct BasicOMXHandler*) ;
+
     // Getters
     OMX_HANDLETYPE*     (*getType)  (struct BasicOMXHandler*) ;
     char                (*isReady)  (struct BasicOMXHandler*) ;
@@ -34,5 +36,8 @@ typedef struct BasicOMXHandler {
 
 /** @brief  Create a new BasicOMXHandler. */
 BasicOMXHandler BasicOMXHandler_Construct() ;
+
+/** @brief  Delete the BasicOMXHandler. */
+void BasicOMXHandler_Destruct(BasicOMXHandler* self) ;
 
 #endif

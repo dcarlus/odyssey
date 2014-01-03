@@ -11,22 +11,19 @@
 #define __POLYPHEMUS__IMAGE_APPOMX_CONTEXT__
 
 #include <stdio.h>
-
 #include <interface/vcos/vcos_semaphore.h>
 #include <interface/vmcs_host/vchost.h>
-
 #include <IL/OMX_Core.h>
 
 #include "handlers/BasicOMXHandler.h"
 #include "handlers/BufferOMXHandler.h"
-
 
 /** @brief	Context of the application for OpenMAX. */
 typedef struct AppOMXContext {
     /** DATA **/
 	BufferOMXHandler    camera ;
 	BufferOMXHandler    encoder ;
-	BasicOMXHandler     nullSink ;
+	BasicOMXHandler*    nullSink ;
 	FILE*               fdOut ;
 	VCOS_SEMAPHORE_T    handlerLock ;
 	char                flushed ;
@@ -50,6 +47,9 @@ typedef struct AppOMXContext {
 
 /** @brief  Create a new AppOMXContext. */
 AppOMXContext AppOMXContext_Construct() ;
+
+/** @brief  Delete the AppOMXContext. */
+void AppOMXContext_Destruct(AppOMXContext* self) ;
 
 /** @brief  memset() on an AppOMXContext with the right initialization*/
 void* AppOMXContext_Memset(AppOMXContext* self, int c, size_t n) ;

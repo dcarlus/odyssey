@@ -4,6 +4,7 @@
  */
 
 #include "BasicOMXHandler.h"
+#include <stdlib.h>
 
                                                                  /** GETTERS **/
 /** @brief  Get the OMX_HANDLETYPE structure of this OMX handler. */
@@ -35,9 +36,18 @@ static void _BasicOMXHandler_Init(BasicOMXHandler* self) {
 }
 
 
-
+/** @brief  Create a new BasicOMXHandler. */
 BasicOMXHandler BasicOMXHandler_Construct() {
     BasicOMXHandler handler ;
     _BasicOMXHandler_Init(&handler) ;
     return handler ;
+}
+
+
+/** @brief  Delete the BasicOMXHandler. */
+void BasicOMXHandler_Destruct(BasicOMXHandler* self) {
+    if (self != 0) {
+        free(self) ;
+        self = 0 ;
+    }
 }
