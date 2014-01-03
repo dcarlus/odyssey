@@ -32,6 +32,9 @@ typedef struct AppOMXContext {
 	char                flushed ;
 
     /** METHODS **/
+    // Configuration
+    void                (*configureCamera)                  (struct AppOMXContext*) ;
+
     // Getters
     OMX_HANDLETYPE*     (*getCamera)                        (struct AppOMXContext*) ;
     OMX_HANDLETYPE*     (*getEncoder)                       (struct AppOMXContext*) ;

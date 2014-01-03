@@ -27,27 +27,6 @@
 #include <IL/OMX_Broadcom.h>
 
 /**
- * @author  Tuomas Jormola
- * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
- */
-#define OMX_INIT_STRUCTURE(a) \
-    memset(&(a), 0, sizeof(a)); \
-    (a).nSize = sizeof(a); \
-    (a).nVersion.nVersion = OMX_VERSION; \
-    (a).nVersion.s.nVersionMajor = OMX_VERSION_MAJOR; \
-    (a).nVersion.s.nVersionMinor = OMX_VERSION_MINOR; \
-    (a).nVersion.s.nRevision = OMX_VERSION_REVISION; \
-    (a).nVersion.s.nStep = OMX_VERSION_STEP
-
-
-/**
- * @brief   Exit program on OpenMAX error.
- * @author  Tuomas Jormola
- * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
- */
-void omx_die(OMX_ERRORTYPE error, const char* message, ...) ;
-
-/**
  * @brief   OMX calls this handler for all the events it emits.
  * @author  Tuomas Jormola
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
