@@ -18,7 +18,7 @@ static OMX_HANDLETYPE* AppOMXContext_GetEncoderHandleType(AppOMXContext* self) {
 
 /** @brief  Get the null sink OMX_HANDLETYPE structure. */
 static OMX_HANDLETYPE* AppOMXContext_GetNullSinkHandleType(AppOMXContext* self) {
-    return ((self -> nullSink).type) ;
+    return &((self -> nullSink).type) ;
 }
 
 /** @brief  Get the handler locker semaphore of the application context. */

@@ -39,8 +39,8 @@ static void initAppOMX(AppOMXContext* ctx) {
     callbacks.FillBufferDone = fill_output_buffer_done_handler ;
 
     init_component_handle("camera", ctx -> getCamera(ctx) , ctx, &callbacks) ;
-/*    init_component_handle("video_encode", ctx -> getEncoder(ctx) , ctx, &callbacks) ;*/
-/*    init_component_handle("null_sink", ctx -> getNullSink(ctx) , ctx, &callbacks) ;*/
+    init_component_handle("video_encode", ctx -> getEncoder(ctx) , ctx, &callbacks) ;
+    init_component_handle("null_sink", ctx -> getNullSink(ctx) , ctx, &callbacks) ;
 }
 
 
