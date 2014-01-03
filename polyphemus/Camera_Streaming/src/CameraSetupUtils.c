@@ -134,6 +134,7 @@ void init_component_handle(
                            OMX_PTR pAppData,
                            OMX_CALLBACKTYPE* callbacks
                           ) {
+    OMX_ERRORTYPE error ;
     char fullname[32] ;
 
     // Get handle
@@ -142,8 +143,9 @@ void init_component_handle(
     strncat(fullname, name, strlen(fullname) - 1) ;
     log_printer("Initializing component %s\n", fullname) ;
 
-    if ((r = OMX_GetHandle(hComponent, fullname, pAppData, callbacks)) != OMX_ErrorNone)
-        omx_die(r, "Failed to get handle for component %s", fullname) ;
+    error = OMX_GetHandle(hComponent, fullname, pAppData, callbacks) ;
+    if (error != OMX_ErrorNone)
+        omx_die(error, "Failed to get handle for component %s", fullname) ;
 
     // Disable ports
     OMX_INDEXTYPE types[] = {
@@ -165,17 +167,11 @@ void init_component_handle(
             for (nPortIndex = ports.nStartPortNumber ; nPortIndex < max ; nPortIndex++) {
                 log_printer("Disabling port %d of component %s\n", nPortIndex, fullname) ;
 
-puts("GOUPS ---> ???? WHAT ELSE !") ;
-                OMX_ERRORTYPE error ;
                 error = OMX_SendCommand(*hComponent, OMX_CommandPortDisable, nPortIndex, NULL) ;
-puts("PIJONA")
-                if (error != OMX_ErrorNone) {
-puts("HIIHAH") ;
-                    omx_die(r, "Failed to disable port %d of component %s", nPortIndex, fullname) ;
-                }
-puts("PIUPU") ;
+                if (error != OMX_ErrorNone)
+                    omx_die(error, "Failed to disable port %d of component %s", nPortIndex, fullname) ;
+
                 block_until_port_changed(*hComponent, nPortIndex, OMX_FALSE) ;
-puts("OPOE") ;
             }
         }
     }

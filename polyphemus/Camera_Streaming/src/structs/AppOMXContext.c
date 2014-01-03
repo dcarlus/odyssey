@@ -8,17 +8,17 @@
                                                                  /** GETTERS **/
 /** @brief  Get the camera OMX_HANDLETYPE structure. */
 static OMX_HANDLETYPE* AppOMXContext_GetCameraHandleType(AppOMXContext* self) {
-    return &((self -> camera).getBasicHandler() -> getType()) ;
+    return &((self -> camera).basic.type) ;
 }
 
 /** @brief  Get the encoder OMX_HANDLETYPE structure. */
 static OMX_HANDLETYPE* AppOMXContext_GetEncoderHandleType(AppOMXContext* self) {
-    return &((self -> encoder).getBasicHandler() -> getType()) ;
+    return &((self -> encoder).basic.type) ;
 }
 
 /** @brief  Get the null sink OMX_HANDLETYPE structure. */
 static OMX_HANDLETYPE* AppOMXContext_GetNullSinkHandleType(AppOMXContext* self) {
-    return ((self -> nullSink).getType(self -> nullSink)) ;
+    return ((self -> nullSink).type) ;
 }
 
 /** @brief  Get the handler locker semaphore of the application context. */
@@ -30,12 +30,16 @@ static VCOS_SEMAPHORE_T* AppOMXContext_GetHandlerLock(AppOMXContext* self) {
                                                                  /** SETTERS **/
 /** @brief  Set the camera readiness flag to true. */
 static void AppOMXContext_SetCameraReady(AppOMXContext* self) {
-    (self -> camera).getBasicHandler() -> setReady() ;
+    BufferOMXHandler* cameraBuffer = &(self -> camera) ;
+    BasicOMXHandler* camera = cameraBuffer -> getBasicHandler(cameraBuffer) ;
+    camera -> setReady(camera) ;
 }
 
 /** @brief  Set the encoder availability flag to true. */
 static void AppOMXContext_SetEncoderOutputBufferAvailable(AppOMXContext* self) {
-    (self -> encoder).getBasicHandler() -> setReady() ;
+    BufferOMXHandler* encoderBuffer = &(self -> encoder) ;
+    BasicOMXHandler* encoder = encoderBuffer -> getBasicHandler(encoderBuffer) ;
+    encoder -> setReady(encoder) ;
 }
 
 /** @brief  Set the flush flag to true. */
