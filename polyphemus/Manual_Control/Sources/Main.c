@@ -17,8 +17,10 @@ void *ThreadReadBatteryVoltage(void *Pointer_Parameters)
 		Battery_Voltage = RobotReadBatteryVoltage();
 
 		// Compute percentage
-		Percentage = (Battery_Voltage / ROBOT_MAXIMUM_BATTERY_VOLTAGE) * 100.f;
-		if (Percentage > 100) Percentage = 100; // Adjust value because a wide range of batteries are used
+		Percentage = ((Battery_Voltage - ROBOT_MINIMUM_BATTERY_VOLTAGE) / (ROBOT_MAXIMUM_BATTERY_VOLTAGE - ROBOT_MINIMUM_BATTERY_VOLTAGE)) * 100.f;
+		// Adjust values to stay in [0, 100] range
+		if (Percentage < 0) Percentage = 0;
+		else if (Percentage > 100) Percentage = 100;
 
 		// Display values
 		InterfaceDisplayBatteryVoltage(Percentage, Battery_Voltage);

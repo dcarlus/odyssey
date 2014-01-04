@@ -12,6 +12,8 @@
 //-----------------------------------------------------------------------------
 /** Fully-charged battery voltage in Volts. */
 #define ROBOT_MAXIMUM_BATTERY_VOLTAGE 7.2f
+/** Near to deep discharge battery voltage in Volts. */
+#define ROBOT_MINIMUM_BATTERY_VOLTAGE 6.0f
 
 //-----------------------------------------------------------------------------
 // Public types

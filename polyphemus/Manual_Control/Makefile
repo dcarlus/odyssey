@@ -23,4 +23,4 @@ $(OBJECTS_PATH)/Interface.o: $(SOURCES_PATH)/Interface.c $(SOURCES_PATH)/Interfa
 	$(CC) $(CCFLAGS) -c $(SOURCES_PATH)/Interface.c -o $(OBJECTS_PATH)/Interface.o
 
 clean:
-	rm -f $(OBJECTS)
+	rm -f $(OBJECTS) Manual_Control
