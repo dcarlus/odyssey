@@ -17,7 +17,6 @@
 #include <errno.h>
 
 #include <bcm_host.h>
-
 #include <interface/vcos/vcos_semaphore.h>
 #include <interface/vmcs_host/vchost.h>
 
@@ -25,6 +24,8 @@
 #include <IL/OMX_Component.h>
 #include <IL/OMX_Video.h>
 #include <IL/OMX_Broadcom.h>
+
+#include "PortsConfigurationUtils.h"
 
 /**
  * @brief   OMX calls this handler for all the events it emits.
@@ -75,16 +76,5 @@ void init_component_handle(
                            OMX_PTR pAppData,
                            OMX_CALLBACKTYPE* callbacks
                           ) ;
-
-/**
- * @brief   ...
- * @author  Tuomas Jormola
- * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
- */
-void block_until_port_changed(
-                              OMX_HANDLETYPE hComponent,
-                              OMX_U32 nPortIndex,
-                              OMX_BOOL bEnabled
-                             ) ;
 
 #endif

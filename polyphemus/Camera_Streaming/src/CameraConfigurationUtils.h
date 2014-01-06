@@ -20,6 +20,8 @@
 #include <IL/OMX_Video.h>
 #include <IL/OMX_Broadcom.h>
 
+#include "OMXUtils.h"
+
 
 // Hard coded parameters
 #define VIDEO_WIDTH                     640
@@ -42,7 +44,7 @@
 
 
 /** @brief  Open a list of ports. */
-void open_ports(int ports[],
+void open_ports(enum OMX_PORT_NUMBER ports[],
                 const char* portsName[],
                 unsigned char portsCount,
                 OMX_HANDLETYPE* hComponent) ;

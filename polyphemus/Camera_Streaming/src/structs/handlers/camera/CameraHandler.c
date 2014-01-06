@@ -24,10 +24,8 @@ static void _CameraHandler_SetCallbackOnCameraReady(BasicOMXHandler* self) {
     cbtype.nIndex = OMX_IndexParamCameraDeviceNumber ;
     cbtype.bEnable = OMX_TRUE ;
 
-    OMX_ERRORTYPE error ;
-    error = OMX_SetConfig(camera, OMX_IndexConfigRequestCallback, &cbtype) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to request camera device number parameter change callback for camera") ;
+    testError(OMX_SetConfig(camera, OMX_IndexConfigRequestCallback, &cbtype),
+              "Failed to request camera device number parameter change callback for camera") ;
 }
 
 
@@ -45,10 +43,8 @@ static void _CameraHandler_SetCameraDeviceNumber(BasicOMXHandler* self) {
     device.nPortIndex = OMX_ALL ;
     device.nU32 = CAM_DEVICE_NUMBER ;
 
-    OMX_ERRORTYPE error ;
-    error = OMX_SetParameter(camera, OMX_IndexParamCameraDeviceNumber, &device) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to set camera parameter device number") ;
+    testError(OMX_SetParameter(camera, OMX_IndexParamCameraDeviceNumber, &device),
+              "Failed to set camera parameter device number") ;
 }
 
 
@@ -61,28 +57,23 @@ static void _CameraHandler_ConfigureCameraPreviewFormat(BasicOMXHandler* self) {
     OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
 
-    OMX_PARAM_PORTDEFINITIONTYPE camera_portdef ;
-    OMX_INIT_STRUCTURE(camera_portdef) ;
-    camera_portdef.nPortIndex = 70 ;
+    (self -> portDef).nPortIndex = PORT_CAMERA_PREVIEW ;
+    testError(OMX_GetParameter(camera, OMX_IndexParamPortDefinition, &(self -> portDef)),
+              "Failed to get port definition for camera preview output port 70") ;
 
-    error = OMX_GetParameter(camera, OMX_IndexParamPortDefinition, &camera_portdef) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to get port definition for camera preview output port 70") ;
-
-    camera_portdef.format.video.nFrameWidth = VIDEO_WIDTH ;
-    camera_portdef.format.video.nFrameHeight = VIDEO_HEIGHT ;
-    camera_portdef.format.video.xFramerate = VIDEO_FRAMERATE << 16 ;
+    (self -> portDef).format.video.nFrameWidth = VIDEO_WIDTH ;
+    (self -> portDef).format.video.nFrameHeight = VIDEO_HEIGHT ;
+    (self -> portDef).format.video.xFramerate = VIDEO_FRAMERATE << 16 ;
     {
         // Stolen from gstomxvideodec.c of gst-omx
-        OMX_U32 width = camera_portdef.format.video.nFrameWidth ;
-        OMX_U32 bufferAlignment = camera_portdef.nBufferAlignment - 1 ;
-        camera_portdef.format.video.nStride = (width + bufferAlignment) & (~(bufferAlignment)) ;
+        OMX_U32 width = (self -> portDef).format.video.nFrameWidth ;
+        OMX_U32 bufferAlignment = (self -> portDef).nBufferAlignment - 1 ;
+        (self -> portDef).format.video.nStride = (width + bufferAlignment) & (~(bufferAlignment)) ;
     }
-    camera_portdef.format.video.eColorFormat = OMX_COLOR_FormatYUV420PackedPlanar ;
+    (self -> portDef).format.video.eColorFormat = OMX_COLOR_FormatYUV420PackedPlanar ;
 
-    error = OMX_SetParameter(camera, OMX_IndexParamPortDefinition, &camera_portdef) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to set port definition for camera preview output port 70") ;
+    testError(OMX_SetParameter(camera, OMX_IndexParamPortDefinition, &(self -> portDef)),
+              "Failed to set port definition for camera preview output port 70") ;
 }
 
 
@@ -97,17 +88,13 @@ static void _CameraHandler_ConfigureCameraVideoOutputFormat(BasicOMXHandler* sel
     OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
 
-    OMX_PARAM_PORTDEFINITIONTYPE camera_portdef ;
-    OMX_INIT_STRUCTURE(camera_portdef) ;
-    camera_portdef.nPortIndex = 70 ;
-    error = OMX_GetParameter(camera, OMX_IndexParamPortDefinition, &camera_portdef) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to get port definition for camera preview output port 70") ;
+    (self -> portDef).nPortIndex = PORT_CAMERA_PREVIEW ;
+    testError(OMX_GetParameter(camera, OMX_IndexParamPortDefinition, &(self -> portDef)),
+              "Failed to get port definition for camera preview output port 70") ;
 
-    camera_portdef.nPortIndex = 71 ;
-    error = OMX_SetParameter(camera, OMX_IndexParamPortDefinition, &camera_portdef) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to set port definition for camera video output port 71") ;
+    (self -> portDef).nPortIndex = PORT_CAMERA_VIDEO ;
+    testError(OMX_SetParameter(camera, OMX_IndexParamPortDefinition, &(self -> portDef)),
+              "Failed to set port definition for camera video output port 71") ;
 }
 
 
@@ -119,22 +106,18 @@ static void _CameraHandler_ConfigureCameraVideoOutputFormat(BasicOMXHandler* sel
 static void _CameraHandler_SetFramerate(BasicOMXHandler* self) {
     OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
-    OMX_PARAM_PORTDEFINITIONTYPE camera_portdef ;
-    OMX_INIT_STRUCTURE(camera_portdef) ;
 
     OMX_CONFIG_FRAMERATETYPE framerate ;
     OMX_INIT_STRUCTURE(framerate) ;
-    framerate.nPortIndex = 70 ;
-    framerate.xEncodeFramerate = camera_portdef.format.video.xFramerate ;
+    framerate.nPortIndex = PORT_CAMERA_PREVIEW ;
+    framerate.xEncodeFramerate = (self -> portDef).format.video.xFramerate ;
 
-    error = OMX_SetConfig(camera, OMX_IndexConfigVideoFramerate, &framerate) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to set framerate configuration for camera preview output port 70") ;
+    testError(OMX_SetConfig(camera, OMX_IndexConfigVideoFramerate, &framerate),
+              "Failed to set framerate configuration for camera preview output port 70") ;
 
-    framerate.nPortIndex = 71 ;
-    error = OMX_SetConfig(camera, OMX_IndexConfigVideoFramerate, &framerate) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to set framerate configuration for camera video output port 71") ;
+    framerate.nPortIndex = PORT_CAMERA_VIDEO ;
+    testError(OMX_SetConfig(camera, OMX_IndexConfigVideoFramerate, &framerate),
+              "Failed to set framerate configuration for camera video output port 71") ;
 }
 
 
@@ -152,9 +135,8 @@ static void _CameraHandler_SetSharpness(BasicOMXHandler* self) {
     sharpness.nPortIndex = OMX_ALL ;
     sharpness.nSharpness = CAM_SHARPNESS ;
 
-    error = OMX_SetConfig(camera, OMX_IndexConfigCommonSharpness, &sharpness) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to set camera sharpness configuration") ;
+    testError(OMX_SetConfig(camera, OMX_IndexConfigCommonSharpness, &sharpness),
+              "Failed to set camera sharpness configuration") ;
 }
 
 
@@ -172,9 +154,8 @@ static void _CameraHandler_SetContrast(BasicOMXHandler* self) {
     contrast.nPortIndex = OMX_ALL ;
     contrast.nContrast = CAM_CONTRAST ;
 
-    error = OMX_SetConfig(camera, OMX_IndexConfigCommonContrast, &contrast) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to set camera contrast configuration") ;
+    testError(OMX_SetConfig(camera, OMX_IndexConfigCommonContrast, &contrast),
+              "Failed to set camera contrast configuration") ;
 }
 
 
@@ -192,9 +173,8 @@ static void _CameraHandler_SetSaturation(BasicOMXHandler* self) {
     saturation.nPortIndex = OMX_ALL ;
     saturation.nSaturation = CAM_SATURATION ;
 
-    error = OMX_SetConfig(camera, OMX_IndexConfigCommonSaturation, &saturation) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to set camera saturation configuration") ;
+    testError(OMX_SetConfig(camera, OMX_IndexConfigCommonSaturation, &saturation),
+              "Failed to set camera saturation configuration") ;
 }
 
 
@@ -212,9 +192,8 @@ static void _CameraHandler_SetBrightness(BasicOMXHandler* self) {
     brightness.nPortIndex = OMX_ALL ;
     brightness.nBrightness = CAM_BRIGHTNESS ;
 
-    error = OMX_SetConfig(camera, OMX_IndexConfigCommonBrightness, &brightness) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to set camera brightness configuration") ;
+    testError(OMX_SetConfig(camera, OMX_IndexConfigCommonBrightness, &brightness),
+              "Failed to set camera brightness configuration") ;
 }
 
 
@@ -234,9 +213,8 @@ static void _CameraHandler_SetExposure(BasicOMXHandler* self) {
     exposure_value.bAutoSensitivity = CAM_EXPOSURE_AUTO_SENSITIVITY ;
     exposure_value.nSensitivity = CAM_EXPOSURE_ISO_SENSITIVITY ;
 
-    error = OMX_SetConfig(camera, OMX_IndexConfigCommonExposureValue, &exposure_value) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to set camera exposure value configuration") ;
+    testError(OMX_SetConfig(camera, OMX_IndexConfigCommonExposureValue, &exposure_value),
+              "Failed to set camera exposure value configuration") ;
 }
 
 
@@ -254,9 +232,8 @@ static void _CameraHandler_SetFrameStabilization(BasicOMXHandler* self) {
     frame_stabilisation_control.nPortIndex = OMX_ALL ;
     frame_stabilisation_control.bStab = CAM_FRAME_STABILISATION ;
 
-    error = OMX_SetConfig(camera, OMX_IndexConfigCommonFrameStabilisation, &frame_stabilisation_control) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to set camera frame frame stabilisation control configuration") ;
+    testError(OMX_SetConfig(camera, OMX_IndexConfigCommonFrameStabilisation, &frame_stabilisation_control),
+              "Failed to set camera frame frame stabilisation control configuration") ;
 }
 
 
@@ -274,9 +251,8 @@ static void _CameraHandler_SetWhiteBalance(BasicOMXHandler* self) {
     white_balance_control.nPortIndex = OMX_ALL ;
     white_balance_control.eWhiteBalControl = CAM_WHITE_BALANCE_CONTROL ;
 
-    error = OMX_SetConfig(camera, OMX_IndexConfigCommonWhiteBalance, &white_balance_control) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to set camera frame white balance control configuration") ;
+    testError(OMX_SetConfig(camera, OMX_IndexConfigCommonWhiteBalance, &white_balance_control),
+              "Failed to set camera frame white balance control configuration") ;
 }
 
 
@@ -294,9 +270,8 @@ static void _CameraHandler_SetImageFilter(BasicOMXHandler* self) {
     image_filter.nPortIndex = OMX_ALL ;
     image_filter.eImageFilter = CAM_IMAGE_FILTER ;
 
-    error = OMX_SetConfig(camera, OMX_IndexConfigCommonImageFilter, &image_filter) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to set camera image filter configuration") ;
+    testError(OMX_SetConfig(camera, OMX_IndexConfigCommonImageFilter, &image_filter),
+              "Failed to set camera image filter configuration") ;
 }
 
 
@@ -319,12 +294,11 @@ static void _CameraHandler_SetMirror(BasicOMXHandler* self) {
 
     OMX_CONFIG_MIRRORTYPE mirror ;
     OMX_INIT_STRUCTURE(mirror) ;
-    mirror.nPortIndex = 71 ;
+    mirror.nPortIndex = PORT_CAMERA_VIDEO ;
     mirror.eMirror = eMirror ;
 
-    error = OMX_SetConfig(camera, OMX_IndexConfigCommonMirror, &mirror) ;
-    if (error != OMX_ErrorNone)
-        omx_die(error, "Failed to set mirror configuration for camera video output port 71") ;
+    testError(OMX_SetConfig(camera, OMX_IndexConfigCommonMirror, &mirror),
+              "Failed to set mirror configuration for camera video output port 71") ;
 }
 
 
@@ -341,6 +315,8 @@ static void _CameraHandler_WaitCameraIsReady(BasicOMXHandler* self) {
 
 /**  @brief   Configure the camera output formats (preview and video). */
 static void CameraHandler_Configure(BasicOMXHandler* self) {
+    OMX_INIT_STRUCTURE(self -> portDef) ;
+
     _CameraHandler_SetCallbackOnCameraReady(self) ;
     _CameraHandler_SetCameraDeviceNumber(self) ;
     _CameraHandler_ConfigureCameraPreviewFormat(self) ;

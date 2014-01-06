@@ -11,6 +11,9 @@
 #define __POLYPHEMUS__IMAGE_BASICOMXHANDLER__
 
 #include <IL/OMX_Core.h>
+#include <IL/OMX_Broadcom.h>
+
+typedef OMX_PARAM_PORTDEFINITIONTYPE OMXPortDefType ;
 
 /**
  * @brief	A basic OMX handler structure.
@@ -19,18 +22,20 @@
  */
 typedef struct BasicOMXHandler {
     /** DATA **/
-	OMX_HANDLETYPE      type ;
-	char                readiness ;
+	OMX_HANDLETYPE  type ;
+	OMXPortDefType  portDef ;
+	char            readiness ;
 
     /** METHODS **/
     void                (*configure)(struct BasicOMXHandler*) ;
 
     // Getters
-    OMX_HANDLETYPE*     (*getType)  (struct BasicOMXHandler*) ;
-    char                (*isReady)  (struct BasicOMXHandler*) ;
+    OMX_HANDLETYPE*     (*getType)      (struct BasicOMXHandler*) ;
+    OMXPortDefType*     (*getPortDef)   (struct BasicOMXHandler*) ;
+    char                (*isReady)      (struct BasicOMXHandler*) ;
 
     // Setters
-    void                (*setReady) (struct BasicOMXHandler*) ;
+    void                (*setReady)     (struct BasicOMXHandler*) ;
 } BasicOMXHandler ;
 
 

@@ -7,6 +7,7 @@
 #include "OMXUtils.h"
 #include "structs/AppOMXContext.h"
 
+
 OMX_ERRORTYPE event_handler(
                             OMX_HANDLETYPE hComponent,
                             OMX_PTR pAppData,
@@ -128,32 +129,8 @@ void init_component_handle(
                 if (error != OMX_ErrorNone)
                     omx_die(error, "Failed to disable port %d of component %s", nPortIndex, fullname) ;
 
-                block_until_port_changed(*hComponent, nPortIndex, OMX_FALSE) ;
+                block_until_port_changed(hComponent, nPortIndex, OMX_FALSE) ;
             }
-        }
-    }
-}
-
-
-void block_until_port_changed(
-                              OMX_HANDLETYPE hComponent,
-                              OMX_U32 nPortIndex,
-                              OMX_BOOL bEnabled
-                             ) {
-    OMX_ERRORTYPE r ;
-    OMX_PARAM_PORTDEFINITIONTYPE portdef ;
-    OMX_INIT_STRUCTURE(portdef) ;
-    portdef.nPortIndex = nPortIndex ;
-    OMX_U32 i = 0 ;
-    while (i++ == 0 || portdef.bEnabled != bEnabled) {
-        if ((r = OMX_GetParameter(hComponent,
-                                  OMX_IndexParamPortDefinition,
-                                  &portdef)) != OMX_ErrorNone) {
-            omx_die(r, "Failed to get port definition") ;
-        }
-
-        if (portdef.bEnabled != bEnabled) {
-            usleep(10000) ;
         }
     }
 }

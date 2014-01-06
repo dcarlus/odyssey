@@ -12,6 +12,11 @@ static OMX_HANDLETYPE* BasicOMXHandler_GetHandleType(BasicOMXHandler* self) {
     return &(self -> type) ;
 }
 
+/** @brief  Get the port definition of this OMX handler. */
+static OMXPortDefType* BasicOMXHandler_GetPortDef(BasicOMXHandler* self) {
+    return &(self -> portDef) ;
+}
+
 /** @brief  Get the readiness flag of this OMX handler. */
 static char BasicOMXHandler_GetReadiness(BasicOMXHandler* self) {
     return (self -> readiness) ;
@@ -29,6 +34,7 @@ static void BasicOMXHandler_SetAsReady(BasicOMXHandler* self) {
 static void _BasicOMXHandler_Init(BasicOMXHandler* self) {
     // Getters
     self -> getType = BasicOMXHandler_GetHandleType ;
+    self -> getPortDef = BasicOMXHandler_GetPortDef ;
     self -> isReady = BasicOMXHandler_GetReadiness ;
 
     // Setters

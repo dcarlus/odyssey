@@ -31,17 +31,20 @@ typedef struct AppOMXContext {
     /** METHODS **/
     // Configuration
     void                (*configureCamera)                  (struct AppOMXContext*) ;
+    void                (*configureEncoder)                 (struct AppOMXContext*) ;
 
     // Getters
     OMX_HANDLETYPE*     (*getCamera)                        (struct AppOMXContext*) ;
     OMX_HANDLETYPE*     (*getEncoder)                       (struct AppOMXContext*) ;
     OMX_HANDLETYPE*     (*getNullSink)                      (struct AppOMXContext*) ;
     VCOS_SEMAPHORE_T*   (*getHandlerLock)                   (struct AppOMXContext*) ;
+    char                (*isFlushed)                   (struct AppOMXContext*) ;
 
     // Setters
     void                (*setCameraReady)                   (struct AppOMXContext*) ;
     void                (*setEncoderOutputBufferAvailable)  (struct AppOMXContext*) ;
     void                (*flush)                            (struct AppOMXContext*) ;
+    void                (*unflush)                          (struct AppOMXContext*) ;
 } AppOMXContext ;
 
 

@@ -16,6 +16,14 @@ static void AppOMXContext_ConfigureCamera(AppOMXContext* self) {
 }
 
 
+/** @brief  Configure the encoder parameters. */
+static void AppOMXContext_ConfigureEncoder(AppOMXContext* self) {
+    BasicOMXHandler* encoderHandler = &(self -> encoder).basic ;
+    BasicOMXHandler* cameraHandler = &(self -> camera).basic ;
+    encoderHandler -> configure(encoderHandler) ;
+}
+
+
                                                                  /** GETTERS **/
 /** @brief  Get the camera OMX_HANDLETYPE structure. */
 static OMX_HANDLETYPE* AppOMXContext_GetCameraHandleType(AppOMXContext* self) {
@@ -35,6 +43,11 @@ static OMX_HANDLETYPE* AppOMXContext_GetNullSinkHandleType(AppOMXContext* self) 
 /** @brief  Get the handler locker semaphore of the application context. */
 static VCOS_SEMAPHORE_T* AppOMXContext_GetHandlerLock(AppOMXContext* self) {
     return &(self -> handlerLock) ;
+}
+
+/** @brief  Get the flush flag. */
+static char AppOMXContext_IsFlushed(AppOMXContext* self) {
+    return self -> flushed ;
 }
 
 
@@ -58,23 +71,31 @@ static void AppOMXContext_SetFlushed(AppOMXContext* self) {
     self -> flushed = 1 ;
 }
 
+/** @brief  Set the flush flag to false. */
+static void AppOMXContext_SetUnflushed(AppOMXContext* self) {
+    self -> flushed = 0 ;
+}
+
 
                                                              /** CONSTRUCTOR **/
 /** @brief  Initialize an AppOMXContext. */
 static void _AppOMXContext_Init(AppOMXContext* self) {
     // Configuration
     self -> configureCamera = AppOMXContext_ConfigureCamera ;
+    self -> configureEncoder = AppOMXContext_ConfigureEncoder ;
 
     // Getters
     self -> getCamera = AppOMXContext_GetCameraHandleType ;
     self -> getEncoder = AppOMXContext_GetEncoderHandleType ;
     self -> getNullSink = AppOMXContext_GetNullSinkHandleType ;
     self -> getHandlerLock = AppOMXContext_GetHandlerLock ;
+    self -> isFlushed = AppOMXContext_IsFlushed ;
 
     // Setters
     self -> setCameraReady = AppOMXContext_SetCameraReady ;
     self -> setEncoderOutputBufferAvailable = AppOMXContext_SetEncoderOutputBufferAvailable ;
     self -> flush = AppOMXContext_SetFlushed ;
+    self -> unflush = AppOMXContext_SetUnflushed ;
 
 
     // Initialize data

@@ -29,6 +29,24 @@
     (a).nVersion.s.nRevision = OMX_VERSION_REVISION; \
     (a).nVersion.s.nStep = OMX_VERSION_STEP
 
+
+/**
+ * @brief   List of the used ports with a better semantic.
+ * @author  Denis CARLUS
+ */
+enum OMX_PORT_NUMBER {
+                        PORT_CAMERA_INPUT       = 73,
+                        PORT_CAMERA_PREVIEW     = 70,
+                        PORT_CAMERA_VIDEO       = 71,
+                        PORT_CAMERA_STILL_IMAGE = 72,
+
+                        PORT_ENCODER_INPUT      = 200,
+                        PORT_ENCODER_OUTPUT     = 201,
+
+                        PORT_NULLSINK_INPUT     = 240
+                      } ;
+
+
 /**
  * @brief  Print debug messages.
  * @author  Tuomas Jormola
@@ -42,6 +60,10 @@ void log_printer(const char* message, ...) ;
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 void omx_die(OMX_ERRORTYPE error, const char* message, ...) ;
+
+
+/** @brief   Test an error and display a message if needed. */
+void testError(OMX_ERRORTYPE error, const char* message) ;
 
 /**
  * @brief   Make the application stop with an error message.

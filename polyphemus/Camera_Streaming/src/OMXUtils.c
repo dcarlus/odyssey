@@ -5,11 +5,6 @@
 
 #include "OMXUtils.h"
 
-void die(const char* message) {
-    fprintf(stderr, message) ;
-    exit(EXIT_FAILURE) ;
-}
-
 void log_printer(const char* message, ...) {
 /*    #ifdef DEBUG*/
     va_list args ;
@@ -50,5 +45,16 @@ void omx_die(OMX_ERRORTYPE error, const char* message, ...) {
     }
 
     fprintf(stderr, "OMX error: %s: 0x%08x %s\n", str, error, e) ;
+    exit(EXIT_FAILURE) ;
+}
+
+
+void testError(OMX_ERRORTYPE error, const char* message) {
+    if (error != OMX_ErrorNone)
+        omx_die(error, message) ;
+}
+
+void die(const char* message) {
+    fprintf(stderr, message) ;
     exit(EXIT_FAILURE) ;
 }
