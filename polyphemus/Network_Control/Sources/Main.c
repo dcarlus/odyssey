@@ -151,81 +151,84 @@ int main(int argc, char *argv[])
 		printf("Error : can't bind server.\n");
 		return -1;
 	}
-	else PrintDebug("Server ready.");
-
-	// Wait for the unique client
-	Socket_Client = NetworkServerListen(Socket_Server);
-	if (Socket_Client < 0)
-	{
-		printf("Error : the client could not connect.\n");
-		close(Socket_Server);
-		return -1;
-	}
-	PrintDebug("Client connected.\n");
 
 	while (1)
 	{
-		// Read a command
-		if (read(Socket_Client, &Byte, 1) != 1)
+		PrintDebug("Server ready.");
+
+		// Wait for the unique client
+		Socket_Client = NetworkServerListen(Socket_Server);
+		if (Socket_Client < 0)
 		{
-			printf("Could not receive client's command, disconnecting.\n");
-			RobotSetMotion(ROBOT_MOTION_STOPPED);
-			RobotSetLedState(0);
-			close(Socket_Client);
+			printf("Error : the client could not connect.\n");
 			close(Socket_Server);
-			return 0;
+			return -1;
 		}
-		Command = (TCommand) Byte;
+		PrintDebug("Client connected.\n");
 
-		// Execute command
-		switch (Command)
+		while (1)
 		{
-			case COMMAND_STOP:
-				PrintDebug("Stop");
+			// Read a command
+			if (read(Socket_Client, &Byte, 1) != 1)
+			{
+				PrintDebug("!!!! Could not receive client's command, disconnecting !!!!\n");
 				RobotSetMotion(ROBOT_MOTION_STOPPED);
-				SendAcknowledge();
-				break;
-
-			case COMMAND_FORWARD:
-				PrintDebug("Forward");
-				RobotSetMotion(ROBOT_MOTION_FORWARD);
-				SendAcknowledge();
-				break;
-
-			case COMMAND_BACKWARD:
-				PrintDebug("Backward");
-				RobotSetMotion(ROBOT_MOTION_BACKWARD);
-				SendAcknowledge();
-				break;
-
-			case COMMAND_LEFT:
-				PrintDebug("Left");
-				RobotSetMotion(ROBOT_MOTION_FORWARD_TURN_LEFT);
-				SendAcknowledge();
-				break;
-
-			case COMMAND_RIGHT:
-				PrintDebug("Right");
-				RobotSetMotion(ROBOT_MOTION_FORWARD_TURN_RIGHT);
-				SendAcknowledge();
-				break;
-
-			case COMMAND_READ_BATTERY_VOLTAGE:
-				PrintDebug("Read battery voltage percentage : %d%%", Battery_Voltage_Percentage);
-				write(Socket_Client, &Battery_Voltage_Percentage, sizeof(Battery_Voltage_Percentage));
-				break;
-
-			case COMMAND_LED_ON:
-				PrintDebug("Light led");
-				RobotSetLedState(1);
-				SendAcknowledge();
-				break;
-
-			case COMMAND_LED_OFF:
-				PrintDebug("Turn off led");
 				RobotSetLedState(0);
-				SendAcknowledge();
+				close(Socket_Client);
 				break;
+			}
+			Command = (TCommand) Byte;
+
+			// Execute command
+			switch (Command)
+			{
+				case COMMAND_STOP:
+					PrintDebug("Stop");
+					RobotSetMotion(ROBOT_MOTION_STOPPED);
+					SendAcknowledge();
+					break;
+
+				case COMMAND_FORWARD:
+					PrintDebug("Forward");
+					RobotSetMotion(ROBOT_MOTION_FORWARD);
+					SendAcknowledge();
+					break;
+
+				case COMMAND_BACKWARD:
+					PrintDebug("Backward");
+					RobotSetMotion(ROBOT_MOTION_BACKWARD);
+					SendAcknowledge();
+					break;
+
+				case COMMAND_LEFT:
+					PrintDebug("Left");
+					RobotSetMotion(ROBOT_MOTION_FORWARD_TURN_LEFT);
+					SendAcknowledge();
+					break;
+
+				case COMMAND_RIGHT:
+					PrintDebug("Right");
+					RobotSetMotion(ROBOT_MOTION_FORWARD_TURN_RIGHT);
+					SendAcknowledge();
+					break;
+
+				case COMMAND_READ_BATTERY_VOLTAGE:
+					PrintDebug("Read battery voltage percentage : %d%%", Battery_Voltage_Percentage);
+					write(Socket_Client, &Battery_Voltage_Percentage, sizeof(Battery_Voltage_Percentage));
+					break;
+
+				case COMMAND_LED_ON:
+					PrintDebug("Light led");
+					RobotSetLedState(1);
+					SendAcknowledge();
+					break;
+
+				case COMMAND_LED_OFF:
+					PrintDebug("Turn off led");
+					RobotSetLedState(0);
+					SendAcknowledge();
+					break;
+			}
 		}
 	}
 }
