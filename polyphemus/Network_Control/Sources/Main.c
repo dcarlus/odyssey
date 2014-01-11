@@ -3,17 +3,18 @@
  * @author Adrien RICCIARDI
  * @version 1.0 : 07/01/2014
  * @version 1.1 : 09/01/2014, added debugging function.
+ * @version 1.2 : 11/01/2014, debug is now written to syslog and server is a daemon.
  */
 #include <stdio.h>
 #include <unistd.h> // For read(), write()...
 #include <pthread.h>
 #include <stdlib.h> // For atoi()
 #include <stdarg.h> // For va_list and friends
-#include <time.h>
+#include <syslog.h>
 #include "Robot.h"
 #include "Network.h"
 
-/** Comment this out to disable debug messages. */
+/** Comment this to disable all debug messages. */
 #define DEBUG
 
 /** The acknowledge code. */
@@ -37,30 +38,20 @@ typedef enum
 static int Socket_Client;
 static unsigned char Battery_Voltage_Percentage = 0;
 
-/** Display a debug message.
+/** Display a debug message to syslog.
+ * @param Priority Syslog message priority (@see man syslog).
  * @param String_Format Format of the string to display.
  * @param ... Printf() like parameters.
  */
-static void PrintDebug(char *String_Format, ...)
+static void Log(int Priority, char *String_Format, ...)
 {
-#ifdef DEBUG
-	va_list List_Arguments;
-	time_t Time;
-	struct tm *Pointer_Splitted_Time;
+	#ifdef DEBUG
+		va_list List_Arguments;
 
-	// Get current time
-	Time = time(NULL);
-	// Split time in hours, minutes...
-	Pointer_Splitted_Time = localtime(&Time);
-	// Display time
-	printf("[%02d:%02d:%02d] ", Pointer_Splitted_Time->tm_hour, Pointer_Splitted_Time->tm_min, Pointer_Splitted_Time->tm_sec);
-
-	// Show debug string
-	va_start(List_Arguments, String_Format);
-	vprintf(String_Format, List_Arguments);
-	va_end(List_Arguments);
-	putchar('\n');
-#endif
+		va_start(List_Arguments, String_Format);
+		vsyslog(Priority, String_Format, List_Arguments);
+		va_end(List_Arguments);
+	#endif
 }
 
 /** Send an acknowledge code to the client socket.
@@ -74,7 +65,7 @@ static void SendAcknowledge(void)
 	Size = sizeof(Byte);
 	if (write(Socket_Client, &Byte, Size) != Size)
 	{
-		printf("WARNING : could not send acknowledge to client, stopping robot.\n");
+		Log(LOG_WARNING, "WARNING : could not send acknowledge to client, stopping robot.\n");
 		RobotSetMotion(ROBOT_MOTION_STOPPED);
 	}
 }
@@ -112,10 +103,13 @@ int main(int argc, char *argv[])
 	unsigned char Byte;
 	TCommand Command;
 
+	// Connect to syslog
+	openlog("Polyphemus", LOG_CONS, LOG_DAEMON);
+
 	// Check parameters
 	if (argc != 3)
 	{
-		printf("Bad arguments.\nUsage : %s serverIpAddress serverListeningPort\n", argv[0]);
+		Log(LOG_ERR, "Bad calling arguments.\nUsage : %s serverIpAddress serverListeningPort\n", argv[0]);
 		return -1;
 	}
 
@@ -126,16 +120,17 @@ int main(int argc, char *argv[])
 	// Connect to the robot
 	if (!RobotInit("/dev/ttyAMA0"))
 	{
-		puts("Error : can't connect to the robot.");
+		Log(LOG_ERR, "Error : can't connect to the robot.");
 		return -1;
 	}
 	// Stop robot in case of UART glitch
 	RobotSetMotion(ROBOT_MOTION_STOPPED);
+	RobotSetLedState(0);
 
 	// Create threads
 	if (pthread_create(&Thread_ID, NULL, ThreadReadBatteryVoltage, NULL) != 0)
 	{
-		puts("Error : can't create battery voltage thread.");
+		Log(LOG_ERR, "Error : can't create battery voltage thread.");
 		return -1;
 	}
 
@@ -143,35 +138,42 @@ int main(int argc, char *argv[])
 	Socket_Server = NetworkServerCreate(String_Server_IP, Server_Port);
 	if (Socket_Server == -1)
 	{
-		printf("Error : can't bind server socket.\n");
+		Log(LOG_ERR, "Error : can't bind server socket.");
 		return -1;
 	}
 	else if (Socket_Server == -2)
 	{
-		printf("Error : can't bind server.\n");
+		Log(LOG_ERR, "Error : can't bind server.");
+		return -1;
+	}
+
+	// Daemonize server
+	if (daemon(0, 1) != 0)
+	{
+		Log(LOG_ERR, "Error : can't daemonize server.");
 		return -1;
 	}
 
 	while (1)
 	{
-		PrintDebug("Server ready.");
+		Log(LOG_INFO, "Server ready.");
 
 		// Wait for the unique client
 		Socket_Client = NetworkServerListen(Socket_Server);
 		if (Socket_Client < 0)
 		{
-			printf("Error : the client could not connect.\n");
+			Log(LOG_ERR, "Error : the client could not connect.\n");
 			close(Socket_Server);
 			return -1;
 		}
-		PrintDebug("Client connected.\n");
+		Log(LOG_INFO, "Client connected.\n");
 
 		while (1)
 		{
 			// Read a command
 			if (read(Socket_Client, &Byte, 1) != 1)
 			{
-				PrintDebug("!!!! Could not receive client's command, disconnecting !!!!\n");
+				Log(LOG_INFO, "!!!! Could not receive client's command, disconnecting !!!!\n");
 				RobotSetMotion(ROBOT_MOTION_STOPPED);
 				RobotSetLedState(0);
 				close(Socket_Client);
@@ -183,48 +185,48 @@ int main(int argc, char *argv[])
 			switch (Command)
 			{
 				case COMMAND_STOP:
-					PrintDebug("Stop");
+					Log(LOG_DEBUG, "Stop");
 					RobotSetMotion(ROBOT_MOTION_STOPPED);
 					SendAcknowledge();
 					break;
 
 				case COMMAND_FORWARD:
-					PrintDebug("Forward");
+					Log(LOG_DEBUG, "Forward");
 					RobotSetMotion(ROBOT_MOTION_FORWARD);
 					SendAcknowledge();
 					break;
 
 				case COMMAND_BACKWARD:
-					PrintDebug("Backward");
+					Log(LOG_DEBUG, "Backward");
 					RobotSetMotion(ROBOT_MOTION_BACKWARD);
 					SendAcknowledge();
 					break;
 
 				case COMMAND_LEFT:
-					PrintDebug("Left");
+					Log(LOG_DEBUG, "Left");
 					RobotSetMotion(ROBOT_MOTION_FORWARD_TURN_LEFT);
 					SendAcknowledge();
 					break;
 
 				case COMMAND_RIGHT:
-					PrintDebug("Right");
+					Log(LOG_DEBUG, "Right");
 					RobotSetMotion(ROBOT_MOTION_FORWARD_TURN_RIGHT);
 					SendAcknowledge();
 					break;
 
 				case COMMAND_READ_BATTERY_VOLTAGE:
-					PrintDebug("Read battery voltage percentage : %d%%", Battery_Voltage_Percentage);
+					Log(LOG_DEBUG, "Read battery voltage percentage : %d%%", Battery_Voltage_Percentage);
 					write(Socket_Client, &Battery_Voltage_Percentage, sizeof(Battery_Voltage_Percentage));
 					break;
 
 				case COMMAND_LED_ON:
-					PrintDebug("Light led");
+					Log(LOG_DEBUG, "Light led");
 					RobotSetLedState(1);
 					SendAcknowledge();
 					break;
 
 				case COMMAND_LED_OFF:
-					PrintDebug("Turn off led");
+					Log(LOG_DEBUG, "Turn off led");
 					RobotSetLedState(0);
 					SendAcknowledge();
 					break;
