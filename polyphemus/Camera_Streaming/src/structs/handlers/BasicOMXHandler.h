@@ -36,6 +36,7 @@ typedef struct BasicOMXHandler {
 
     // Setters
     void                (*setReady)     (struct BasicOMXHandler*) ;
+    void                (*setUnready)   (struct BasicOMXHandler*) ;
 } BasicOMXHandler ;
 
 

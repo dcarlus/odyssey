@@ -6,7 +6,7 @@
 #include "OMXUtils.h"
 
 void log_printer(const char* message, ...) {
-/*    #ifdef DEBUG*/
+/*    #ifdef DEBUG_POLYPHEMUS*/
     va_list args ;
     char str[1024] ;
     memset(str, 0, sizeof(str)) ;

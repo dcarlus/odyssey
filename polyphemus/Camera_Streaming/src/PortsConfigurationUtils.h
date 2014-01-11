@@ -31,6 +31,24 @@ void tunneling(AppOMXContext* ctx) ;
 void enablePorts(AppOMXContext* ctx) ;
 
 
+/**
+ * @brief   Allocate camera input buffer and encoder output buffer, buffers for
+ *          tunneled ports are allocated internally by OMX.
+ * @author  Tuomas Jormola
+ * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
+ */
+void allocateBuffers(AppOMXContext* ctx) ;
+
+
+/**
+ * @brief   Switch state of the components prior to starting the video capture
+ *          and encoding loop.
+ * @author  Tuomas Jormola
+ * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
+ */
+void portsReady(AppOMXContext* ctx) ;
+
+
 
 /**
  * @brief   Some busy loops to verify we're running in order.

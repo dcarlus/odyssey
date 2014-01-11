@@ -4,7 +4,7 @@ CCOPTS      = -fPIC -ftree-vectorize -pipe -Wall -Werror
 
 ifndef NDEBUG
     ECHO_DEBUG = "Compile in DEBUG mode"
-    CCOPTS += -DDEBUG -g3
+    CCOPTS += -DDEBUG_POLYPHEMUS -g3
 else
     ECHO_DEBUG = "Compile in RELEASE mode"
     CCOPTS += -O3

@@ -27,7 +27,7 @@
 #define VIDEO_WIDTH                     640
 #define VIDEO_HEIGHT                    480
 #define VIDEO_FRAMERATE                 24
-#define VIDEO_BITRATE                   10000000
+#define VIDEO_BITRATE                   1000000
 #define CAM_DEVICE_NUMBER               0
 #define CAM_SHARPNESS                   0                       // -100 .. 100
 #define CAM_CONTRAST                    0                       // -100 .. 100

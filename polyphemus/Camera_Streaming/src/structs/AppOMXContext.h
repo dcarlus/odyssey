@@ -11,9 +11,10 @@
 #define __POLYPHEMUS__IMAGE_APPOMX_CONTEXT__
 
 #include <stdio.h>
+#include <IL/OMX_Core.h>
+#include <bcm_host.h>
 #include <interface/vcos/vcos_semaphore.h>
 #include <interface/vmcs_host/vchost.h>
-#include <IL/OMX_Core.h>
 
 #include "handlers/BasicOMXHandler.h"
 #include "handlers/BufferOMXHandler.h"
@@ -37,14 +38,20 @@ typedef struct AppOMXContext {
     OMX_HANDLETYPE*     (*getCamera)                        (struct AppOMXContext*) ;
     OMX_HANDLETYPE*     (*getEncoder)                       (struct AppOMXContext*) ;
     OMX_HANDLETYPE*     (*getNullSink)                      (struct AppOMXContext*) ;
+    BufferOMXHandler*   (*getCameraHandler)                 (struct AppOMXContext*) ;
+    BufferOMXHandler*   (*getEncoderHandler)                (struct AppOMXContext*) ;
     VCOS_SEMAPHORE_T*   (*getHandlerLock)                   (struct AppOMXContext*) ;
-    char                (*isFlushed)                   (struct AppOMXContext*) ;
+    char                (*isFlushed)                        (struct AppOMXContext*) ;
 
     // Setters
     void                (*setCameraReady)                   (struct AppOMXContext*) ;
     void                (*setEncoderOutputBufferAvailable)  (struct AppOMXContext*) ;
     void                (*flush)                            (struct AppOMXContext*) ;
     void                (*unflush)                          (struct AppOMXContext*) ;
+    void                (*setOutput)                        (struct AppOMXContext*, FILE*) ;
+
+    // Utilities
+    void                (*capture)                          (struct AppOMXContext*) ;
 } AppOMXContext ;
 
 

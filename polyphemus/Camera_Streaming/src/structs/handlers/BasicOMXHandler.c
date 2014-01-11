@@ -28,6 +28,11 @@ static void BasicOMXHandler_SetAsReady(BasicOMXHandler* self) {
     self -> readiness = 1 ;
 }
 
+/** @brief  Set the readiness flag to true. */
+static void BasicOMXHandler_SetAsNotReady(BasicOMXHandler* self) {
+    self -> readiness = 0 ;
+}
+
 
                                                              /** CONSTRUCTOR **/
 /** @brief  Initialize a BasicOMXHandler. */
@@ -39,6 +44,7 @@ static void _BasicOMXHandler_Init(BasicOMXHandler* self) {
 
     // Setters
     self -> setReady = BasicOMXHandler_SetAsReady ;
+    self -> setUnready = BasicOMXHandler_SetAsNotReady ;
 
 
     // Data

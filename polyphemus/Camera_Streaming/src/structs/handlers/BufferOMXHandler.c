@@ -24,6 +24,8 @@ static OMX_BUFFERHEADERTYPE* BufferOMXHandler_GetBufferHeader(BufferOMXHandler* 
                                                              /** CONSTRUCTOR **/
 /** @brief  Initialize a BufferOMXHandler. */
 static void _BufferOMXHandler_Init(BufferOMXHandler* self) {
+    self -> bufferHeader = 0 ;
+
     // Getters
     self -> getBasicHandler = BufferOMXHandler_GetBasicOMXHandler ;
     self -> getBufferHeader = BufferOMXHandler_GetBufferHeader ;

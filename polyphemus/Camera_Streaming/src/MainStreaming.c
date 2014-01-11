@@ -107,6 +107,7 @@ static void configureNullSink(AppOMXContext* ctx) {
 }
 
 
+
 int main(int argc, char** argv) {
     AppOMXContext ctx = AppOMXContext_Construct() ;
     initAppOMX(&ctx) ;
@@ -117,6 +118,10 @@ int main(int argc, char** argv) {
     // PortsConfigurationUtils
     tunneling(&ctx) ;
     enablePorts(&ctx) ;
+    allocateBuffers(&ctx) ;
+    portsReady(&ctx) ;
+
+    ctx.capture(&ctx) ;
 
     return 0 ;
 }
