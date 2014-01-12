@@ -14,6 +14,7 @@
 #include "CameraSetupUtils.h"
 #include "CameraConfigurationUtils.h"
 #include "PortsConfigurationUtils.h"
+#include "structs/StreamingServer.h"
 #include "structs/AppOMXContext.h"
 
 /**
@@ -109,18 +110,20 @@ static void configureNullSink(AppOMXContext* ctx) {
 
 
 int main(int argc, char** argv) {
+    // Prepare the application context to get video stream
     AppOMXContext ctx = AppOMXContext_Construct() ;
     initAppOMX(&ctx) ;
     configureCamera(&ctx) ;
     configureEncoder(&ctx) ;
     configureNullSink(&ctx) ;
 
-    // PortsConfigurationUtils
+    // Configure ports to capture and compress video stream
     tunneling(&ctx) ;
     enablePorts(&ctx) ;
     allocateBuffers(&ctx) ;
     portsReady(&ctx) ;
 
+    // Capture and make video streaming over Wifi connection
     ctx.capture(&ctx) ;
 
     return 0 ;

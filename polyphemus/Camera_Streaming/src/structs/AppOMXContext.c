@@ -8,9 +8,11 @@
 #include "handlers/encoder/EncoderBufferHandler.h"
 #include "handlers/null_sink/NullSinkHandler.h"
 #include "../OMXUtils.h"
+#include "../Network.h"
+#include <assert.h>
 
 /** @brief  Global variable used by the signal handler and capture/encoding loop. */
-static int want_quit = 0;
+static int WantToQuit = 0;
 
                                                            /** CONFIGURATION **/
 /** @brief  Configure the camera parameters. */
@@ -90,11 +92,6 @@ static void AppOMXContext_SetUnflushed(AppOMXContext* self) {
     self -> flushed = 0 ;
 }
 
-/** @brief  Set output of the application. */
-static void AppOMXContext_SetOutput(AppOMXContext* self, FILE* output) {
-    self -> fdOut = output ;
-}
-
 
                                                                /** UTILITIES **/
 /**
@@ -103,7 +100,7 @@ static void AppOMXContext_SetOutput(AppOMXContext* self, FILE* output) {
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _AppOMXContext_SignalHandler(int signal) {
-    want_quit = 1 ;
+    WantToQuit = 1 ;
 }
 
 
@@ -324,54 +321,71 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
     int quit_in_keyframe = 0 ;
     int need_next_buffer_to_be_filled = 1 ;
     size_t output_written ;
+    StreamingServer* ss = &(self -> streamingServer) ;
 
     signal(SIGINT,  _AppOMXContext_SignalHandler) ;
     signal(SIGTERM, _AppOMXContext_SignalHandler) ;
     signal(SIGQUIT, _AppOMXContext_SignalHandler) ;
 
     while (1) {
-        if (encoderBasicHandler -> isReady(encoderBasicHandler)) {
-            if (want_quit && !quit_detected) {
-                log_printer("Exit signal detected, waiting for next key frame boundry before exiting...") ;
-                quit_detected = 1 ;
-                quit_in_keyframe = (encoderBuffer -> nFlags) & OMX_BUFFERFLAG_SYNCFRAME ;
-            }
+        log_printer("Server ready to stream video") ;
 
-            if (quit_detected) {
-/*            if (quit_detected && (quit_in_keyframe ^ ((encoderBuffer -> nFlags) & OMX_BUFFERFLAG_SYNCFRAME))) {*/
-                log_printer("Key frame boundry reached, exiting loop...") ;
-                break ;
-            }
-
-
-            // Flush buffer to output file
-            output_written = fwrite((encoderBuffer -> pBuffer) + (encoderBuffer -> nOffset),
-                                    1,
-                                    encoderBuffer -> nFilledLen,
-                                    self -> fdOut) ;
-
-            if (output_written != (encoderBuffer -> nFilledLen)) {
-                printf("Failed to write to output file: %s\n", strerror(errno)) ;
-                die("Application will stop now\n") ;
-            }
-
-            log_printer("Read from output buffer and write to output file %d/%d",
-                        encoderBuffer -> nFilledLen,
-                        encoderBuffer -> nAllocLen) ;
-            need_next_buffer_to_be_filled = 1 ;
+        // Wait for the unique client
+        self -> clientSocket = ss -> listen(ss) ;
+        if ((self -> clientSocket) < 0) {
+            ss -> close(ss) ;
+            die("Error : the client could not connect.\n") ;
         }
 
-        // Buffer flushed, request a new buffer to be filled by the encoder component
-        if (need_next_buffer_to_be_filled) {
-            need_next_buffer_to_be_filled = 0 ;
-            encoderBasicHandler -> setUnready(encoderBasicHandler) ;
+        log_printer("Client connected !") ;
 
-            testError(OMX_FillThisBuffer(*encoder, encoderBuffer),
-                      "Failed to request filling of the output buffer on encoder output port 201") ;
+
+        // Encode the video frames to compress them and send them to the client
+        while (1) {
+            if (encoderBasicHandler -> isReady(encoderBasicHandler)) {
+                if (WantToQuit && !quit_detected) {
+                    log_printer("Exit signal detected, waiting for next key frame boundry before exiting...") ;
+                    quit_detected = 1 ;
+                    quit_in_keyframe = (encoderBuffer -> nFlags) & OMX_BUFFERFLAG_SYNCFRAME ;
+                }
+
+                if (quit_detected) {
+                    log_printer("Key frame boundry reached, exiting loop...") ;
+                    break ;
+                }
+
+                                                                                /** VIDEO STREAMING HERE! SENDS A FRAME! **/
+                // pointer arithmetic to find out the beginning of the frame data
+                void* frame = (encoderBuffer -> pBuffer) + (encoderBuffer -> nOffset) ;
+                // Send frame to client
+                output_written = ss -> send(ss,
+                                            (self -> clientSocket),
+                                            frame,
+                                            (encoderBuffer -> nFilledLen)) ;
+
+                if (output_written != (encoderBuffer -> nFilledLen)) {
+                    printf("Failed to write to output file: %s\n", strerror(errno)) ;
+                    die("Application will stop now\n") ;
+                }
+
+                log_printer("Read from output buffer and write to output file %d/%d",
+                            encoderBuffer -> nFilledLen,
+                            encoderBuffer -> nAllocLen) ;
+                need_next_buffer_to_be_filled = 1 ;
+            }
+
+            // Buffer flushed, request a new buffer to be filled by the encoder component
+            if (need_next_buffer_to_be_filled) {
+                need_next_buffer_to_be_filled = 0 ;
+                encoderBasicHandler -> setUnready(encoderBasicHandler) ;
+
+                testError(OMX_FillThisBuffer(*encoder, encoderBuffer),
+                          "Failed to request filling of the output buffer on encoder output port 201") ;
+            }
+
+            // Would be better to use signaling here but hey this works too
+            usleep(1000) ;
         }
-
-        // Would be better to use signaling here but hey this works too
-        usleep(1000) ;
     }
 
     // End the capture...
@@ -387,7 +401,8 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
     _AppOMXContext_SetComponentsAsLoaded(self) ;
 
     // Close the output file
-    fclose(self -> fdOut) ;
+    log_printer("Server shutdowns\n") ;
+    ss -> close(ss) ;
     vcos_semaphore_delete(&(self -> handlerLock)) ;
     testError(OMX_Deinit(), "OMX de-initalization failed") ;
 }
@@ -415,17 +430,17 @@ static void _AppOMXContext_Init(AppOMXContext* self) {
     self -> setEncoderOutputBufferAvailable = AppOMXContext_SetEncoderOutputBufferAvailable ;
     self -> flush = AppOMXContext_SetFlushed ;
     self -> unflush = AppOMXContext_SetUnflushed ;
-    self -> setOutput = AppOMXContext_SetOutput ;
 
     // Utilities
     self -> capture = AppOMXContext_CaptureVideo ;
 
 
     // Initialize data
+    self -> streamingServer = StreamingServer_Construct("10.10.0.1", 1234) ;
     self -> camera = CameraBufferHandler_Construct() ;
     self -> encoder = EncoderBufferHandler_Construct() ;
     self -> nullSink = NullSinkHandler_Construct() ;
-    self -> setOutput(self, stdout) ;
+    self -> clientSocket = -2 ;
 }
 
 

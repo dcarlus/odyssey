@@ -16,6 +16,7 @@
 #include <interface/vcos/vcos_semaphore.h>
 #include <interface/vmcs_host/vchost.h>
 
+#include "StreamingServer.h"
 #include "handlers/BasicOMXHandler.h"
 #include "handlers/BufferOMXHandler.h"
 
@@ -25,9 +26,10 @@ typedef struct AppOMXContext {
 	BufferOMXHandler    camera ;
 	BufferOMXHandler    encoder ;
 	BasicOMXHandler     nullSink ;
-	FILE*               fdOut ;
 	VCOS_SEMAPHORE_T    handlerLock ;
-	char                flushed ;
+	StreamingServer     streamingServer ;
+    int                 clientSocket ;
+    char                flushed ;
 
     /** METHODS **/
     // Configuration
@@ -48,7 +50,6 @@ typedef struct AppOMXContext {
     void                (*setEncoderOutputBufferAvailable)  (struct AppOMXContext*) ;
     void                (*flush)                            (struct AppOMXContext*) ;
     void                (*unflush)                          (struct AppOMXContext*) ;
-    void                (*setOutput)                        (struct AppOMXContext*, FILE*) ;
 
     // Utilities
     void                (*capture)                          (struct AppOMXContext*) ;
