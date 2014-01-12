@@ -1,0 +1,176 @@
+#ifndef __ALLEGRO_SINGLETON_H__
+#define __ALLEGRO_SINGLETON_H__
+
+#include "patterns/NoCopy.h"
+#include "Timer.h"
+#include "Window.h"
+
+#include "../levels/Level.h"
+
+#include <string>
+#include <vector>
+#include <iostream>
+
+class Allegro : private NoCopy {
+    private:
+        /** @brief Singleton of the Allegro. */
+        static Allegro* Singleton ;
+
+		/** @brief	To know if the application continue to run. */
+		bool m_isRunning ;
+
+		/** @brief	Main window of the application. */
+		Window* m_window ;
+
+		/** @brief	Timer to run the game at 60 frame per second. */
+		Timer* m_FPSTimer ;
+
+		/** @brief	Timer to make the CPU controlled characters move. */
+		Timer* m_botTimer ;
+
+		/** @brief 	Register all the events in this queue. */
+		ALLEGRO_EVENT_QUEUE* m_event_queue ;
+
+
+
+		/** @brief	Level map where characters can move. */
+		Level* m_level ;
+
+        /** @brief  To know if the player has lost. */
+        bool m_gameOver ;
+
+        /** @brief  Texture displayed when game over. */
+        ALLEGRO_BITMAP* m_gameOverScreen ;
+
+
+                                            /** CONSTRUCTION AND DESTRUCTION **/
+        /**
+         * @brief Construction of a Allegro handler.
+         */
+        Allegro() ;
+
+        /** @brief Destruction of the Allegro handler. */
+        ~Allegro() throw() ;
+
+    public:
+        /**
+         * @brief Get the unique instance of Allegro.
+         * @return  The unique instance of Allegro.
+         */
+        static Allegro* getInstance() {
+            if (Singleton == 0)
+                Singleton = new Allegro() ;
+            return Singleton ;
+        }
+
+
+		/**
+		 * @brief	Refresh the window content.
+		 */
+		void refresh() {
+			m_level -> display() ;
+
+            // Draw the game over screen if needed
+            if (m_gameOver)
+                al_draw_bitmap(m_gameOverScreen, 0, 0, 0) ;
+
+			m_window -> refresh() ;
+		}
+
+
+		/** @brief	Stop the application. */
+		void stop() {
+			m_isRunning = false ;
+		}
+
+
+        /** @brief  Make the player lose! */
+        void gameOver() {
+            m_gameOver = true ;
+            m_gameOverScreen = al_load_bitmap("../media/images/game_over.png") ;
+        }
+
+		/**
+		 * @brief	Run the application.
+		 */
+		bool run() {
+			while(m_isRunning) {
+				ALLEGRO_EVENT ev ;
+				al_wait_for_event(m_event_queue, &ev) ;
+
+
+				if (ev.type == ALLEGRO_EVENT_TIMER) {
+				    if (ev.timer.source == m_FPSTimer -> getAllegroTimer()) {
+					    // Wait for the clock tic
+					    // Do the staff during one clock tic
+					    refresh() ;
+					}
+					else {
+					    m_level -> update() ;
+					}
+				}
+				else if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
+					// A key on the keyboard has been pressed
+					keyboardKeyDownEvents(ev) ;
+				}
+				else if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+					// The application is to be stopped on window closure
+					stop() ;
+				}
+			}
+		}
+
+
+
+        /**
+         * @brief   Get the current map level.
+         */
+        LevelMap* getMap() {
+            return m_level -> getMap() ;
+        }
+
+        /** @brief  Get the position of the player in Tiles (not pixels). */
+        Position getPlayerPosition() {
+            Position pos = getPixelPlayerPosition() ;
+            pos.x = pos.x / Tile::TILE_SIZE ;
+            pos.y = pos.y / Tile::TILE_SIZE ;
+            return pos ;
+        }
+
+        /** @brief  Get the position of the player in pixels. */
+        Position& getPixelPlayerPosition() {
+            return m_level -> getPlayer() -> getPosition() ;
+        }
+
+        /** @brief  Get the bots. */
+        std::vector<Character*>& getBots() {
+            return m_level -> getBots() ;
+        }
+
+
+	private:
+	    /**
+	     * @brief   Handle keyboard when a key is pressed.
+	     * @param   The catched event.
+	     */
+		void keyboardKeyDownEvents(ALLEGRO_EVENT& ev) {
+			switch(ev.keyboard.keycode) {
+                                                           /* Move the player */
+				case ALLEGRO_KEY_UP:
+				case ALLEGRO_KEY_DOWN:
+				case ALLEGRO_KEY_LEFT:
+				case ALLEGRO_KEY_RIGHT:
+				    if (!m_gameOver && !(m_level -> getPlayer() -> isMoving())) {
+    				    std::cout << "caca" << std::endl ;
+				        m_level -> getPlayer() -> move((Character::DIRECTION) ev.keyboard.keycode) ;
+			        }
+				    break ;
+
+                                                      /* Stop the application */
+				case ALLEGRO_KEY_ESCAPE:
+				    stop() ;
+			}
+		}
+} ;
+
+#endif

@@ -1,0 +1,30 @@
+#include "Allegro.h"
+
+using namespace std ;
+
+Allegro* Allegro::Singleton = 0 ;
+
+
+Allegro::Allegro() : m_event_queue(0), m_isRunning(true) {
+	// Set up the application requirements
+	m_window = new Window(640, 480) ;
+	m_FPSTimer = new Timer(1.f/60.f) ;
+	m_gameOver = false ;
+
+    assert(al_install_keyboard()) ;                    // Allows to use keyboard
+	m_event_queue = al_create_event_queue() ;          // Handle several events
+	assert(m_event_queue != 0) ;
+	al_register_event_source(m_event_queue, al_get_display_event_source(m_window -> getDisplay())) ;
+	al_register_event_source(m_event_queue, al_get_timer_event_source(m_FPSTimer -> getAllegroTimer())) ;
+	al_register_event_source(m_event_queue, al_get_keyboard_event_source()) ;
+	m_FPSTimer -> start() ;
+
+	// Set up the game data
+	refresh() ;
+}
+
+Allegro::~Allegro() throw () {
+	delete m_FPSTimer ;
+	delete m_window ;
+	al_destroy_event_queue(m_event_queue) ;
+}

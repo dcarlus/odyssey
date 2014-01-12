@@ -1,0 +1,3 @@
+EasySocket is a library to easily manage sockets in a full C++ style.
+A Client class is available and can be inherited to manage client connections to
+a Server.
