@@ -4,56 +4,34 @@
  * @version 1.0 : 07/01/2014
  * @version 1.1 : 09/01/2014, added debugging function.
  * @version 1.2 : 11/01/2014, debug is now written to syslog and server is a daemon.
+ * @version 1.3 : 14/01/2014, added security.
  */
 #include <stdio.h>
 #include <unistd.h> // For read(), write()...
 #include <pthread.h>
 #include <stdlib.h> // For atoi()
-#include <stdarg.h> // For va_list and friends
-#include <syslog.h>
+#include <signal.h>
 #include "Robot.h"
 #include "Network.h"
+#include "Security_Server.h"
+#include "Log.h"
+#include "Crypto/Utils.h"
 
-/** Comment this to disable all debug messages. */
-#define DEBUG
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Private constants
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 /** The acknowledge code. */
 #define COMMAND_ACKNOWLEDGE 32
 
-/** All robot network commands.
- * @warning Values must fit on 8-bit data.
- */
-typedef enum
-{
-	COMMAND_STOP,
-	COMMAND_FORWARD,
-	COMMAND_BACKWARD,
-	COMMAND_LEFT,
-	COMMAND_RIGHT,
-	COMMAND_READ_BATTERY_VOLTAGE,
-	COMMAND_LED_ON,
-	COMMAND_LED_OFF
-} TCommand;
-
-static int Socket_Client;
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Private variables
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+static int Socket_Server, Socket_Client;
 static unsigned char Battery_Voltage_Percentage = 0;
 
-/** Display a debug message to syslog.
- * @param Priority Syslog message priority (@see man syslog).
- * @param String_Format Format of the string to display.
- * @param ... Printf() like parameters.
- */
-static void Log(int Priority, char *String_Format, ...)
-{
-	#ifdef DEBUG
-		va_list List_Arguments;
-
-		va_start(List_Arguments, String_Format);
-		vsyslog(Priority, String_Format, List_Arguments);
-		va_end(List_Arguments);
-	#endif
-}
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Private functions
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 /** Send an acknowledge code to the client socket.
  * @note Stop the robot if the acknowledge sending failed.
  */
@@ -70,7 +48,7 @@ static void SendAcknowledge(void)
 	}
 }
 
-// Read the battery voltage each second
+/** Read the battery voltage each second. */
 static void *ThreadReadBatteryVoltage(void *Pointer_Parameters)
 {
 	float Battery_Voltage;
@@ -94,28 +72,45 @@ static void *ThreadReadBatteryVoltage(void *Pointer_Parameters)
 	return NULL;
 }
 
+/** Called when the SIGTERM signal is received, stop the server.
+ * @param Signal_Number The signal which triggered the handler.
+ */
+static void SignalHandler(int Signal_Number)
+{
+	SecurityServerQuit();
+	close(Socket_Client);
+	close(Socket_Server);
+	Log(LOG_INFO, "Server successfully exited.");
+	exit(0);
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Entry point
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
 	pthread_t Thread_ID;
-	char *String_Server_IP;
+	char *String_Server_IP, *String_File_Path_Keys, *String_File_Path_Counter;
 	unsigned short Server_Port;
-	int Socket_Server;
-	unsigned char Byte;
-	TCommand Command;
+	TRobotCommand Command;
+	struct sigaction Signal_Action;
 
 	// Connect to syslog
-	openlog("Polyphemus", LOG_CONS, LOG_DAEMON);
+	LogInit("Polyphemus");
+	Log(LOG_INFO, "--- Polyphemus server starting ---");
 
 	// Check parameters
-	if (argc != 3)
+	if (argc != 5)
 	{
-		Log(LOG_ERR, "Bad calling arguments.\nUsage : %s serverIpAddress serverListeningPort\n", argv[0]);
+		Log(LOG_ERR, "Bad calling arguments. Usage : %s serverIpAddress serverListeningPort keysFilePath counterFilePath", argv[0]);
 		return -1;
 	}
 
 	// Retrieve parameters values
 	String_Server_IP = argv[1];
 	Server_Port = atoi(argv[2]);
+	String_File_Path_Keys = argv[3];
+	String_File_Path_Counter = argv[4];
 
 	// Connect to the robot
 	if (!RobotInit("/dev/ttyAMA0"))
@@ -126,6 +121,20 @@ int main(int argc, char *argv[])
 	// Stop robot in case of UART glitch
 	RobotSetMotion(ROBOT_MOTION_STOPPED);
 	RobotSetLedState(0);
+
+	// Initialize security subsystem
+	switch (SecurityServerInit(String_File_Path_Keys, String_File_Path_Counter))
+	{
+		case 0:
+			Log(LOG_INFO, "Security subsystem successfully initialized.");
+			break;
+		case 1:
+			Log(LOG_ERR, "Error : can't find security keys file.");
+			return -1;
+		case 2:
+			Log(LOG_ERR, "Error : can't find security anti replay counter file.");
+			return -1;
+	}
 
 	// Create threads
 	if (pthread_create(&Thread_ID, NULL, ThreadReadBatteryVoltage, NULL) != 0)
@@ -147,6 +156,14 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	// Set a new signal handler for SIGTERM, which is sent to stop the daemon
+	Signal_Action.sa_handler = SignalHandler;
+	if (sigaction(SIGTERM, &Signal_Action, NULL) == -1)
+	{
+		Log(LOG_ERR, "Error : can't register signal handler.");
+		return -1;
+	}
+
 	// Daemonize server
 	if (daemon(0, 1) != 0)
 	{
@@ -154,81 +171,95 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	Log(LOG_INFO, "Server ready.");
+
 	while (1)
 	{
-		Log(LOG_INFO, "Server ready.");
+		Log(LOG_INFO, "Server waiting for client...");
 
 		// Wait for the unique client
 		Socket_Client = NetworkServerListen(Socket_Server);
 		if (Socket_Client < 0)
 		{
-			Log(LOG_ERR, "Error : the client could not connect.\n");
+			Log(LOG_ERR, "Error : the client could not connect.");
 			close(Socket_Server);
 			return -1;
 		}
-		Log(LOG_INFO, "Client connected.\n");
+		Log(LOG_INFO, "Client trying to connect...");
+
+		// Authenticate client
+		if (!SecurityServerAuthenticateClient(Socket_Client))
+		{
+			Log(LOG_WARNING, "Warning : could not authenticate client (maybe robot is under attack ?).");
+			close(Socket_Client);
+			continue;
+		}
+		Log(LOG_INFO, "Client connected.");
 
 		while (1)
 		{
-			// Read a command
-			if (read(Socket_Client, &Byte, 1) != 1)
+			// Wait for a command
+			if (!SecurityServerReceiveRobotCommand(Socket_Client, &Command))
 			{
-				Log(LOG_INFO, "!!!! Could not receive client's command, disconnecting !!!!\n");
+				Log(LOG_INFO, "Could not receive client's command, disconnecting.");
 				RobotSetMotion(ROBOT_MOTION_STOPPED);
 				RobotSetLedState(0);
 				close(Socket_Client);
 				break;
 			}
-			Command = (TCommand) Byte;
 
 			// Execute command
 			switch (Command)
 			{
-				case COMMAND_STOP:
-					Log(LOG_DEBUG, "Stop");
+				case ROBOT_COMMAND_STOP:
+					Log(LOG_DEBUG, "Stop.");
 					RobotSetMotion(ROBOT_MOTION_STOPPED);
-					SendAcknowledge();
+					//SendAcknowledge();
 					break;
 
-				case COMMAND_FORWARD:
-					Log(LOG_DEBUG, "Forward");
+				case ROBOT_COMMAND_FORWARD:
+					Log(LOG_DEBUG, "Forward.");
 					RobotSetMotion(ROBOT_MOTION_FORWARD);
-					SendAcknowledge();
+					//SendAcknowledge();
 					break;
 
-				case COMMAND_BACKWARD:
-					Log(LOG_DEBUG, "Backward");
+				case ROBOT_COMMAND_BACKWARD:
+					Log(LOG_DEBUG, "Backward.");
 					RobotSetMotion(ROBOT_MOTION_BACKWARD);
-					SendAcknowledge();
+					//SendAcknowledge();
 					break;
 
-				case COMMAND_LEFT:
-					Log(LOG_DEBUG, "Left");
+				case ROBOT_COMMAND_LEFT:
+					Log(LOG_DEBUG, "Left.");
 					RobotSetMotion(ROBOT_MOTION_FORWARD_TURN_LEFT);
-					SendAcknowledge();
+					//SendAcknowledge();
 					break;
 
-				case COMMAND_RIGHT:
-					Log(LOG_DEBUG, "Right");
+				case ROBOT_COMMAND_RIGHT:
+					Log(LOG_DEBUG, "Right.");
 					RobotSetMotion(ROBOT_MOTION_FORWARD_TURN_RIGHT);
-					SendAcknowledge();
+					//SendAcknowledge();
 					break;
 
-				case COMMAND_READ_BATTERY_VOLTAGE:
-					Log(LOG_DEBUG, "Read battery voltage percentage : %d%%", Battery_Voltage_Percentage);
-					write(Socket_Client, &Battery_Voltage_Percentage, sizeof(Battery_Voltage_Percentage));
+				case ROBOT_COMMAND_READ_BATTERY_VOLTAGE:
+					Log(LOG_DEBUG, "Read battery voltage percentage : %d%%.", Battery_Voltage_Percentage);
+					SecurityServerSendRobotData(Socket_Client, Battery_Voltage_Percentage);
 					break;
 
-				case COMMAND_LED_ON:
-					Log(LOG_DEBUG, "Light led");
+				case ROBOT_COMMAND_LED_ON:
+					Log(LOG_DEBUG, "Light led.");
 					RobotSetLedState(1);
-					SendAcknowledge();
+					//SendAcknowledge();
 					break;
 
-				case COMMAND_LED_OFF:
-					Log(LOG_DEBUG, "Turn off led");
+				case ROBOT_COMMAND_LED_OFF:
+					Log(LOG_DEBUG, "Turn off led.");
 					RobotSetLedState(0);
-					SendAcknowledge();
+					//SendAcknowledge();
+					break;
+
+				default:
+					Log(LOG_DEBUG, "Unknown command received.");
 					break;
 			}
 		}

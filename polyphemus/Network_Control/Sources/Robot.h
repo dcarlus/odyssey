@@ -30,6 +30,21 @@ typedef enum
 	ROBOT_MOTION_BACKWARD_TURN_RIGHT
 } TRobotMotion;
 
+/** All robot network commands.
+ * @warning Values must fit on 8-bit data.
+ */
+typedef enum
+{
+	ROBOT_COMMAND_STOP,
+	ROBOT_COMMAND_FORWARD,
+	ROBOT_COMMAND_BACKWARD,
+	ROBOT_COMMAND_LEFT,
+	ROBOT_COMMAND_RIGHT,
+	ROBOT_COMMAND_READ_BATTERY_VOLTAGE,
+	ROBOT_COMMAND_LED_ON,
+	ROBOT_COMMAND_LED_OFF
+} TRobotCommand;
+
 //-----------------------------------------------------------------------------
 // Public functions
 //-----------------------------------------------------------------------------
