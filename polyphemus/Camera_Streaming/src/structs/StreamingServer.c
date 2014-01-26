@@ -25,11 +25,28 @@ static int StreamingServer_Listen(StreamingServer* self) {
  * @return  Length really sent.
  * @return  -2 if the server failed sending the message to the client.
  */
-static int StreamingServer_Send(StreamingServer* self,
+static int StreamingServer_Write(StreamingServer* self,
+                                 const int client,
+                                 const void* msg,
+                                 const int length) {
+    return NetworkServerWrite(client, msg, length) ;
+}
+
+
+/**
+ * @brief   Send a message to a client.
+ * @param   self    The StreamingServer used to send the message.
+ * @param   client  Client socket through which the message is sent.
+ * @param   msg     Message to send.
+ * @param   length  Length of the message to send.
+ * @return  Length really sent.
+ * @return  -2 if the server failed sending the message to the client.
+ */
+static int StreamingServer_Read(StreamingServer* self,
                                 const int client,
-                                const void* msg,
+                                void* msg,
                                 const int length) {
-    return NetworkServerSend(client, msg, length, 0) ;
+    return NetworkServerRead(client, msg, length) ;
 }
 
 
@@ -59,7 +76,8 @@ static void _StreamingServer_Init(StreamingServer* self) {
 
     // Set methods
     self -> listen  = StreamingServer_Listen ;
-    self -> send    = StreamingServer_Send ;
+    self -> read    = StreamingServer_Read ;
+    self -> write   = StreamingServer_Write ;
     self -> close   = StreamingServer_Close ;
 }
 
@@ -70,6 +88,8 @@ static void _StreamingServer_Init(StreamingServer* self) {
  */
 StreamingServer StreamingServer_Construct(const char* ip,
                                           const unsigned short port) {
+    log_printer("Create server %s:%d\n", ip, port) ;
+
     StreamingServer self = {(char*) ip, port, -3} ;
     _StreamingServer_Init(&self) ;
     return self ;

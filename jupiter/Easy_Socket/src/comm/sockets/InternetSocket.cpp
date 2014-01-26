@@ -1,9 +1,11 @@
 #include "InternetSocket.h"
+#include <sys/ioctl.h>
 
 using namespace std ;
 using namespace es ;
 
 InternetSocket::InternetSocket(int type,
+                               bool blockingIO,
                                const string& protocol)
                                     throw (SocketException) : m_isBound(false),
                                                               m_isPrepared(false),
@@ -26,6 +28,17 @@ InternetSocket::InternetSocket(int type,
     if (m_socketDesc == -1) {
         throw SocketException() ;
     }
+
+
+    // Set the blocking mode on socket I/O
+    char blockMode ;
+    if (blockingIO)
+        // Enable blocking
+        blockMode = 0 ;
+    else
+        // Disable blocking
+        blockMode = 1 ;
+    ioctl(m_socketDesc, FIONBIO, &blockMode) ;
 }
 
 InternetSocket::~InternetSocket() {
@@ -151,7 +164,7 @@ int InternetSocket::send(const int sockfd,
 int InternetSocket::write(const int sockfd,
                           const void* message,
                           const int length) {
-    return send(sockfd, message, length, 0) ;
+    return ::write(sockfd, message, length) ;
 }
 
 
@@ -205,7 +218,7 @@ int InternetSocket::recv(const int sockfd,
 int InternetSocket::read(const int sockfd,
                          void* buffer,
                          const unsigned int length) {
-    return recv(sockfd, buffer, length, 0) ;
+    return ::read(sockfd, buffer, length) ;
 }
 
 

@@ -7,12 +7,30 @@
 #include "handlers/camera/CameraBufferHandler.h"
 #include "handlers/encoder/EncoderBufferHandler.h"
 #include "handlers/null_sink/NullSinkHandler.h"
-#include "../OMXUtils.h"
+#include "../CameraConfigurationUtils.h"
 #include "../Network.h"
+#include "../OMXUtils.h"
 #include <assert.h>
 
+// Client feedback (requests)
+#define CLIENT_REQUEST_NONE     0
+#define CLIENT_REQUEST_KEYFRAME 1
+
+// Header got from the VideoCore is a 27-bytes data.
+#define H264_HEADER_SIZE_PART1  18
+#define H264_HEADER_SIZE_PART2  9
+#define H264_HEADER_SIZE        H264_HEADER_SIZE_PART1 + H264_HEADER_SIZE_PART2
+
+// States to send merged header and data
+#define STATE_MESSAGE_18                    1
+#define STATE_MESSAGE_9                     2
+#define STATE_MESSAGE_FRAME_WITH_HEADER     4
+#define STATE_MESSAGE_FRAME_WITHOUT_HEADER  8
+
+
 /** @brief  Global variable used by the signal handler and capture/encoding loop. */
-static int WantToQuit = 0;
+static int WantToQuit = 0 ;
+
 
                                                            /** CONFIGURATION **/
 /** @brief  Configure the camera parameters. */
@@ -253,6 +271,54 @@ static void _AppOMXContext_SetComponentsAsLoaded(AppOMXContext* self) {
 }
 
 
+
+/**
+ * @brief   Common code to send picture with and variable header size (offset).
+ * @param   bufferData  Buffer to fill.
+ * @param   dataContent Content of the data.
+ * @param   dataLength  Length of the data.
+ * @param   offset      Offset in the buffer where to start writing the data.
+ */
+static void _AppOMXContext_SendPicture(AppOMXContext* self,
+                                       char* bufferData,
+                                       int8_t* dataContent,
+                                       uint32_t dataLength,
+                                       uint32_t offset,
+                                       OMX_BUFFERHEADERTYPE* encoderBuffer) {
+    if (dataLength > 256) {
+        // Length of the frame data: H264 header + picture
+        // data (written in Big Endian to send on network)
+        uint32_t fullLength = htonl(offset + dataLength) ;
+        // Total size of the sent data for write()
+        uint32_t bufferSize = sizeof(uint32_t) + offset + dataLength ;
+
+        // Copy the size of the frame data at offset 0
+        memcpy(bufferData, &fullLength, sizeof(uint32_t)) ;
+        // Copy the compressed frame data at (offset + 4 bytes)
+        memcpy(bufferData + sizeof(uint32_t) + offset, dataContent, dataLength) ;
+
+
+        // @TODO Send data through secured socket*/
+        // Send the full buffer to the client (Jupiter, IO)
+        StreamingServer* ss = &(self -> streamingServer) ;
+        size_t output_written ;
+        output_written = ss -> write(ss,
+                                     self -> clientSocket,
+                                     bufferData,
+                                     bufferSize) ;
+
+        if (output_written != bufferSize) {
+            printf("Failed to write to output file: %s\n", strerror(errno)) ;
+            die("Application will stop now\n") ;
+        }
+
+        log_printer("Read from output buffer and write to output file %d/%d",
+                    encoderBuffer -> nFilledLen,
+                    encoderBuffer -> nAllocLen) ;
+    }
+}
+
+
 /**
  * @brief  Capture the video from the camera.
  * @author  Tuomas Jormola
@@ -314,31 +380,42 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
     log_printer("Configured port definition for null sink input port 240") ;
     dump_port(nullSink, PORT_NULLSINK_INPUT, OMX_FALSE) ;
 
+
     printf("Start capture...\n") ;
 
-
-    int quit_detected = 0 ;
-    int quit_in_keyframe = 0 ;
-    int need_next_buffer_to_be_filled = 1 ;
-    size_t output_written ;
-    StreamingServer* ss = &(self -> streamingServer) ;
+    int quit_detected = 0 ;                                                     // Detect when the user want to quit
+    int quit_in_keyframe = 0 ;                                                  // Detect if a frame is synchronized before quitting
+    int need_next_buffer_to_be_filled = 1 ;                                     // Request for a new frame
+    unsigned char interframesCounter = 0 ;                                      // Counter of interframes (between two keyframes)
+    unsigned char maxInterframes = VIDEO_KEYFRAME_FREQUENCY - 1 ;               // Maximal amount of interframes
+    char bufferData[65567] ;                                                    // Buffer used to write sent informations
+    StreamingServer* ss = &(self -> streamingServer) ;                          // Shortcut to the streaming server object
 
     signal(SIGINT,  _AppOMXContext_SignalHandler) ;
     signal(SIGTERM, _AppOMXContext_SignalHandler) ;
     signal(SIGQUIT, _AppOMXContext_SignalHandler) ;
 
     while (1) {
-        log_printer("Server ready to stream video") ;
+        if (!WantToQuit && (self -> clientSocket == -2)) {
+            log_printer("Server ready to stream video") ;
 
-        // Wait for the unique client
-        self -> clientSocket = ss -> listen(ss) ;
-        if ((self -> clientSocket) < 0) {
-            ss -> close(ss) ;
-            die("Error : the client could not connect.\n") ;
+            // Wait for the unique client
+            self -> clientSocket = ss -> listen(ss) ;
+            if ((self -> clientSocket) < 0) {
+                ss -> close(ss) ;
+                die("Error : the client could not connect.\n") ;
+            }
+
+            log_printer("Client connected !") ;
+        }
+        else {
+            log_printer("Stop server") ;
+            break ;
         }
 
-        log_printer("Client connected !") ;
 
+        // State used to concatenate H264 SPS/PPS to frame data.
+        int stateSending = STATE_MESSAGE_18 ;
 
         // Encode the video frames to compress them and send them to the client
         while (1) {
@@ -354,23 +431,52 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
                     break ;
                 }
 
-                                                                                /** VIDEO STREAMING HERE! SENDS A FRAME! **/
-                // pointer arithmetic to find out the beginning of the frame data
-                void* frame = (encoderBuffer -> pBuffer) + (encoderBuffer -> nOffset) ;
-                // Send frame to client
-                output_written = ss -> send(ss,
-                                            (self -> clientSocket),
-                                            frame,
-                                            (encoderBuffer -> nFilledLen)) ;
 
-                if (output_written != (encoderBuffer -> nFilledLen)) {
-                    printf("Failed to write to output file: %s\n", strerror(errno)) ;
-                    die("Application will stop now\n") ;
+                // Data get from the encoder (header, data, ...)
+                int8_t* dataContent = (encoderBuffer -> pBuffer) + (encoderBuffer -> nOffset) ;
+                // Size of the returned data by the encoder
+                uint32_t dataLength = encoderBuffer -> nFilledLen ;
+
+                // Sometimes the decoder is desynchronized...
+                // So if a keyframe should be sent but there is no header...
+                // Send an interframe instead. Significantly reduces errors.
+                if (((stateSending == STATE_MESSAGE_18) && (dataLength != H264_HEADER_SIZE_PART1))
+                        || ((stateSending == STATE_MESSAGE_9) && (dataLength != H264_HEADER_SIZE_PART2)))
+                    stateSending = STATE_MESSAGE_FRAME_WITHOUT_HEADER ;
+
+                // Switch between the states of the state machine.
+                // It always follows the same order (18-byte data, 9-byte data,
+                // and finally compressed picture data).
+                switch (stateSending) {
+                    case STATE_MESSAGE_18:
+                        // Copy data to the buffer at offset 4
+                        memcpy(bufferData + sizeof(uint32_t), dataContent, dataLength) ;
+                        // Set the next state
+                        stateSending = STATE_MESSAGE_9 ;
+                        break ;
+
+                    case STATE_MESSAGE_9:
+                        // Copy data to the buffer at offset 4 + 18 = 22
+                        memcpy(bufferData + sizeof(uint32_t) + H264_HEADER_SIZE_PART1, dataContent, dataLength) ;
+                        // Set the next state
+                        stateSending = STATE_MESSAGE_FRAME_WITH_HEADER ;
+                        break ;
+
+                    case STATE_MESSAGE_FRAME_WITH_HEADER:
+                        _AppOMXContext_SendPicture(self, bufferData, dataContent, dataLength, H264_HEADER_SIZE, encoderBuffer) ;
+                        stateSending = STATE_MESSAGE_FRAME_WITHOUT_HEADER ;
+                        interframesCounter = 0 ;
+                        break ;
+
+                    case STATE_MESSAGE_FRAME_WITHOUT_HEADER:
+                        interframesCounter++ ;
+                        _AppOMXContext_SendPicture(self, bufferData, dataContent, dataLength, 0, encoderBuffer) ;
+
+                        if (interframesCounter >= maxInterframes)
+                            stateSending = STATE_MESSAGE_18 ;
+                        break ;
                 }
 
-                log_printer("Read from output buffer and write to output file %d/%d",
-                            encoderBuffer -> nFilledLen,
-                            encoderBuffer -> nAllocLen) ;
                 need_next_buffer_to_be_filled = 1 ;
             }
 
@@ -386,6 +492,8 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
             // Would be better to use signaling here but hey this works too
             usleep(1000) ;
         }
+
+        log_printer("Stop video streaming...") ;
     }
 
     // End the capture...
@@ -436,7 +544,11 @@ static void _AppOMXContext_Init(AppOMXContext* self) {
 
 
     // Initialize data
-    self -> streamingServer = StreamingServer_Construct("10.10.0.1", 1234) ;
+    #ifdef NETWORK_WIFI
+        self -> streamingServer = StreamingServer_Construct("10.10.0.1", 9587) ;
+    #else
+        self -> streamingServer = StreamingServer_Construct("192.168.0.2", 9587) ;
+    #endif
     self -> camera = CameraBufferHandler_Construct() ;
     self -> encoder = EncoderBufferHandler_Construct() ;
     self -> nullSink = NullSinkHandler_Construct() ;

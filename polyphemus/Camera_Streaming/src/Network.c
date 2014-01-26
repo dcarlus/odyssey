@@ -48,10 +48,19 @@ int NetworkServerListen(int Socket_Server)
 	return Socket_Client;
 }
 
-int NetworkServerSend(int Socket_Client, const void *Message, const int Message_Length, const int Flags)
+int NetworkServerWrite(int Socket_Client, const void *Message, const int Message_Length)
 {
-    int Length_Sent = send(Socket_Client, Message, Message_Length, Flags);
+    int Length_Sent = write(Socket_Client, Message, Message_Length);
     if (Length_Sent == -1) return -2;
 
     return Length_Sent;
+}
+
+
+int NetworkServerRead(int Socket_Client, void *Message, const int Message_Length)
+{
+    int Length_Read = read(Socket_Client, Message, Message_Length);
+    if (Length_Read == -1) return -2;
+
+    return Length_Read;
 }

@@ -21,7 +21,8 @@ typedef struct StreamingServer {
     /** METHODS **/
     // Utilities
     int     (*listen)   (struct StreamingServer* self) ;
-    int     (*send)     (struct StreamingServer* self, const int client, const void* msg, const int length) ;
+    int     (*read)     (struct StreamingServer* self, const int client, void* msg, const int length) ;
+    int     (*write)    (struct StreamingServer* self, const int client, const void* msg, const int length) ;
     void    (*close)    (struct StreamingServer* self) ;
 } StreamingServer ;
 

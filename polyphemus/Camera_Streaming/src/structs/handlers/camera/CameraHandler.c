@@ -70,7 +70,6 @@ static void _CameraHandler_ConfigureCameraPreviewFormat(BasicOMXHandler* self) {
         OMX_U32 bufferAlignment = (self -> portDef).nBufferAlignment - 1 ;
         (self -> portDef).format.video.nStride = (width + bufferAlignment) & (~(bufferAlignment)) ;
     }
-    (self -> portDef).format.video.eColorFormat = OMX_COLOR_FormatYUV420PackedPlanar ;
 
     testError(OMX_SetParameter(camera, OMX_IndexParamPortDefinition, &(self -> portDef)),
               "Failed to set port definition for camera preview output port 70") ;

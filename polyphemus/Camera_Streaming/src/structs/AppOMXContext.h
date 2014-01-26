@@ -20,6 +20,7 @@
 #include "handlers/BasicOMXHandler.h"
 #include "handlers/BufferOMXHandler.h"
 
+
 /** @brief	Context of the application for OpenMAX. */
 typedef struct AppOMXContext {
     /** DATA **/

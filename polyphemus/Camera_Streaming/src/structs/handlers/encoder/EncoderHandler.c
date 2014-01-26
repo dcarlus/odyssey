@@ -46,7 +46,6 @@ static void _EncoderHandler_ConfigureOutputPort(BasicOMXHandler* self) {
 
     // Which one is effective, this or the configuration just below?
     (self -> portDef).format.video.nBitrate     = VIDEO_BITRATE ;
-
     testError(OMX_SetParameter(encoder, OMX_IndexParamPortDefinition, &(self -> portDef)),
               "Failed to set port definition for encoder output port 201") ;
 }
@@ -91,6 +90,34 @@ static void _EncoderHandler_ConfigureFormat(BasicOMXHandler* self) {
 }
 
 
+/**
+ * @brief   Enable SPS/PPS before each keyframe.
+ */
+static void _EncoderHandler_ConfigureKeyframes(BasicOMXHandler* self) {
+    OMX_ERRORTYPE error ;
+    OMX_HANDLETYPE encoder = self -> type ;
+
+    {
+        OMX_VIDEO_CONFIG_AVCINTRAPERIOD keyframesConfig ;
+        OMX_INIT_STRUCTURE(keyframesConfig) ;
+        keyframesConfig.nPortIndex = PORT_ENCODER_OUTPUT ;
+        keyframesConfig.nIDRPeriod = VIDEO_KEYFRAME_FREQUENCY ;
+        testError(OMX_SetParameter(encoder, OMX_IndexConfigVideoAVCIntraPeriod, &keyframesConfig),
+                  "Failed to set video format for encoder output port 201") ;
+    }
+
+    {
+        OMX_CONFIG_PORTBOOLEANTYPE enableKeyframes ;
+        OMX_INIT_STRUCTURE(enableKeyframes) ;
+        enableKeyframes.nPortIndex = PORT_ENCODER_OUTPUT ;
+        enableKeyframes.bEnabled = OMX_TRUE ;
+
+        testError(OMX_SetParameter(encoder, OMX_IndexParamBrcmVideoAVCInlineHeaderEnable, &enableKeyframes),
+                  "Failed to set video format for encoder output port 201") ;
+    }
+}
+
+
 /**  @brief   Configure the Encoder output formats (preview and video). */
 static void EncoderHandler_Configure(BasicOMXHandler* self) {
     OMX_INIT_STRUCTURE(self -> portDef) ;
@@ -99,6 +126,7 @@ static void EncoderHandler_Configure(BasicOMXHandler* self) {
     _EncoderHandler_ConfigureOutputPort(self) ;
     _EncoderHandler_ConfigureBitrate(self) ;
     _EncoderHandler_ConfigureFormat(self) ;
+    _EncoderHandler_ConfigureKeyframes(self) ;
 }
 
 

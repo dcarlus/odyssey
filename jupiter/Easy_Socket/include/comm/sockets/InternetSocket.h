@@ -71,9 +71,14 @@ namespace es {
              * @brief   Creation of a socket made for internet communications.
              * @param   type        Type of the socket to use (SOCK_STREAM or
              *                      SOCK_DGRAM).
+             * @param   blockingIO  Configure the socket in that way it will
+             *                      block I/O (read, write, recv, send...) and
+             *                      so wait for a new message before reading the
+             *                      socket buffer.
              * @param   protocol    Name of the wanted protocol.
              */
             InternetSocket(int type = SOCK_STREAM,
+                           bool blockingIO = true,
                            const std::string& protocol = "") throw (SocketException) ;
 
             /** @brief Destruction of an InternetSocket. */

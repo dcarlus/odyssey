@@ -19,8 +19,6 @@ namespace es {
      */
     class Client {
         protected:
-            /** @brief  Instance of the client. */
-            static Client* Instance ;
             /** @brief  Session of the user. */
             std::string m_session ;
             /** @brief Socket of the client. */
@@ -46,10 +44,6 @@ namespace es {
             virtual ~Client() ;
 
 
-            /** @brief  Get the instance of the client. */
-            static Client* getInstance() ;
-
-
             /** @brief  Get the session determined at client starting. */
             const std::string& getSession() ;
 
@@ -61,8 +55,11 @@ namespace es {
             virtual void stop() ;
 
         protected:
-            /** @brief  Intermediate function to call run... */
-            static void* manageThread(void* param) ;
+            /**
+             * @brief  Function to implement in the specific client to create
+             *         the background client thread.
+             */
+            virtual void createThread() = 0 ;
 
             /** @brief  Run the client thread. Call stop() to stop it. */
             virtual void run() = 0 ;

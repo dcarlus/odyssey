@@ -24,7 +24,10 @@ LIBS_DIR    = $(ROOT_DIR)/lib
 INCLUDE_DIR = $(ROOT_DIR)/include
 INCLUDES    = -I$(INCLUDE_DIR)
 # Libraries to link
-LIBS        = -lpthread -L$(LIBS_DIR) -leasysocket
+CV_LIBS     = -lopencv_core -lopencv_imgproc -lopencv_highgui
+FFMPEG_LIBS = -lavcodec -lavutil -lswscale
+OTHER_LIBS  = -lpthread -lm -lopenjpeg -L$(LIBS_DIR) -leasysocket
+LIBS        = $(FFMPEG_LIBS) $(CV_LIBS) $(OTHER_LIBS)
 
 #### SOURCES ####
 SRC         = $(wildcard *.cpp)
@@ -51,7 +54,9 @@ infoCompilation:
 	@$(CC) $(CCOPT) -o $(OBJ_DIR)/$@ -c $< $(INCLUDES)
 
 MakeOBJ: $(OBJ)
-#	@cd structs && $(MAKE)
+	@cd clients && $(MAKE)
+	@cd ../
+	@cd picture && $(MAKE)
 	@cd ../
 
 clean:

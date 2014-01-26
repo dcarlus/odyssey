@@ -23,7 +23,7 @@ int NetworkServerCreate(char *String_IP_Address, unsigned short Port);
  */
 int NetworkServerListen(int Socket_Server);
 
-/** Send a message (TCP, UDP).
+/** Send a message over socket.
  * @param   sockfd          The socket descriptor through which the message must be sent.
  * @param   message         The message to send.
  * @param   length          Length of the message.
@@ -31,6 +31,15 @@ int NetworkServerListen(int Socket_Server);
  * @return  Length really sent.
  * @return  -2 if the server failed sending the message to the client.
  */
-int NetworkServerSend(int Socket_Client, const void *Message, const int Message_Length, const int Flags);
+int NetworkServerWrite(int Socket_Client, const void *Message, const int Message_Length);
+
+/** Read a message over socket.
+ * @param   sockfd          The socket descriptor through which the message must be sent.
+ * @param   message         The message to send.
+ * @param   length          Length of the message.
+ * @return  Length really read.
+ * @return  -2 if the server failed reading the message from the client.
+ */
+int NetworkServerRead(int Socket_Client, void *Message, const int Message_Length);
 
 #endif
