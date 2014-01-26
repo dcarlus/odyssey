@@ -18,12 +18,6 @@
 #include "Crypto/Utils.h"
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
-// Private constants
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-/** The acknowledge code. */
-#define COMMAND_ACKNOWLEDGE 32
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Private variables
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 static int Socket_Server, Socket_Client;
@@ -32,22 +26,6 @@ static unsigned char Battery_Voltage_Percentage = 0;
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Private functions
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
-/** Send an acknowledge code to the client socket.
- * @note Stop the robot if the acknowledge sending failed.
- */
-static void SendAcknowledge(void)
-{
-	unsigned char Byte = COMMAND_ACKNOWLEDGE;
-	size_t Size;
-
-	Size = sizeof(Byte);
-	if (write(Socket_Client, &Byte, Size) != Size)
-	{
-		Log(LOG_WARNING, "WARNING : could not send acknowledge to client, stopping robot.\n");
-		RobotSetMotion(ROBOT_MOTION_STOPPED);
-	}
-}
-
 /** Read the battery voltage each second. */
 static void *ThreadReadBatteryVoltage(void *Pointer_Parameters)
 {
@@ -112,6 +90,13 @@ int main(int argc, char *argv[])
 	String_File_Path_Keys = argv[3];
 	String_File_Path_Counter = argv[4];
 
+	// Daemonize server soon so the created resources (threads) are made for the daemonized child and not for the father process
+	if (daemon(1, 1) != 0)
+	{
+		Log(LOG_ERR, "Error : can't daemonize server.");
+		return -1;
+	}
+
 	// Connect to the robot
 	if (!RobotInit("/dev/ttyAMA0"))
 	{
@@ -164,13 +149,6 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	// Daemonize server
-	if (daemon(0, 1) != 0)
-	{
-		Log(LOG_ERR, "Error : can't daemonize server.");
-		return -1;
-	}
-
 	Log(LOG_INFO, "Server ready.");
 
 	while (1)
@@ -214,31 +192,26 @@ int main(int argc, char *argv[])
 				case ROBOT_COMMAND_STOP:
 					Log(LOG_DEBUG, "Stop.");
 					RobotSetMotion(ROBOT_MOTION_STOPPED);
-					//SendAcknowledge();
 					break;
 
 				case ROBOT_COMMAND_FORWARD:
 					Log(LOG_DEBUG, "Forward.");
 					RobotSetMotion(ROBOT_MOTION_FORWARD);
-					//SendAcknowledge();
 					break;
 
 				case ROBOT_COMMAND_BACKWARD:
 					Log(LOG_DEBUG, "Backward.");
 					RobotSetMotion(ROBOT_MOTION_BACKWARD);
-					//SendAcknowledge();
 					break;
 
 				case ROBOT_COMMAND_LEFT:
 					Log(LOG_DEBUG, "Left.");
 					RobotSetMotion(ROBOT_MOTION_FORWARD_TURN_LEFT);
-					//SendAcknowledge();
 					break;
 
 				case ROBOT_COMMAND_RIGHT:
 					Log(LOG_DEBUG, "Right.");
 					RobotSetMotion(ROBOT_MOTION_FORWARD_TURN_RIGHT);
-					//SendAcknowledge();
 					break;
 
 				case ROBOT_COMMAND_READ_BATTERY_VOLTAGE:
@@ -249,13 +222,11 @@ int main(int argc, char *argv[])
 				case ROBOT_COMMAND_LED_ON:
 					Log(LOG_DEBUG, "Light led.");
 					RobotSetLedState(1);
-					//SendAcknowledge();
 					break;
 
 				case ROBOT_COMMAND_LED_OFF:
 					Log(LOG_DEBUG, "Turn off led.");
 					RobotSetLedState(0);
-					//SendAcknowledge();
 					break;
 
 				default:
