@@ -16,9 +16,6 @@
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Constants
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
-/** Size in bytes of a command message payload. */
-#define SECURITY_MESSAGE_ROBOT_CONTROL_PAYLOAD_SIZE_BYTES (sizeof(TSecurityMessageRobotControl) -12  - UTILS_HASH_SIZE_BYTES)
-
 /** Maximum video streaming buffer size in bytes. */
 #define SECURITY_VIDEO_BUFFER_MAXIMUM_SIZE_BYTES 65567
 

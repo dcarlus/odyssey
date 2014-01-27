@@ -20,8 +20,11 @@
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Private constants
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
-/* A security message payload length in bytes. Yes, this is dirty. */
+/** A security message payload length in bytes. Yes, this is dirty. */
 #define SECURITY_MESSAGE_PAYLOAD_SIZE_BYTES (sizeof(TSecurityMessageAuthentication) - (2 * ELLIPTIC_CURVE_SIZE_BYTES))
+
+/** Size in bytes of a command message payload. */
+#define SECURITY_MESSAGE_ROBOT_CONTROL_PAYLOAD_SIZE_BYTES sizeof(int)
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Private variables
@@ -342,7 +345,7 @@ void SecuritySaveCounters(int Counters[], int Counters_Count)
 int SecuritySendRobotControlMessage(int Socket_Destination, EVP_CIPHER_CTX *Pointer_AES_Context, int Data)
 {
 	TSecurityMessageRobotControl Message;
-	unsigned char Encrypted_Message[AES_CIPHERED_MESSAGE_SIZE_BYTES(sizeof(Message))];
+	unsigned char Encrypted_Message[sizeof(Message)];
 	int Encrypted_Message_Size;
 
 	// Fill message payload
@@ -381,12 +384,12 @@ int SecuritySendRobotControlMessage(int Socket_Destination, EVP_CIPHER_CTX *Poin
 int SecurityReceiveRobotControlMessage(int Socket_Source, EVP_CIPHER_CTX *Pointer_AES_Context, int *Pointer_Received_Data)
 {
 	TSecurityMessageRobotControl Message;
-	unsigned char Encrypted_Message[sizeof(Message)]/*AES_CIPHERED_MESSAGE_SIZE_BYTES(sizeof(Message))*/, Decrypted_Message[/*AES_CIPHERED_MESSAGE_SIZE_BYTES(sizeof(Message))*/sizeof(Message)], Computed_Hash[UTILS_HASH_SIZE_BYTES];
+	unsigned char Encrypted_Message[sizeof(Message)], Decrypted_Message[sizeof(Message)], Computed_Hash[UTILS_HASH_SIZE_BYTES];
 	int Decrypted_Message_Size, Received_Message_Size;
 
 	// Receive ciphered message
 	Received_Message_Size = read(Socket_Source, Encrypted_Message, sizeof(Encrypted_Message));
-	if (Received_Message_Size !=  sizeof(Encrypted_Message))
+	if (Received_Message_Size !=  sizeof(Message))
 	{
 		Log(LOG_ERR, "[Security.SecurityReceiveRobotControlMessage] Error : could not retrieve message from socket (received message size is %d bytes).", Received_Message_Size);
 		return 0;
@@ -412,10 +415,22 @@ int SecurityReceiveRobotControlMessage(int Socket_Source, EVP_CIPHER_CTX *Pointe
 		Log(LOG_ERR, "[Security.SecurityReceiveRobotControlMessage] Error : failed to compute message hash.");
 		return 0;
 	}
+
 	// Compare hashes
 	if (memcmp(Computed_Hash, Message.Hash, SECURITY_MESSAGE_ROBOT_CONTROL_PAYLOAD_SIZE_BYTES) != 0)
 	{
+		char String_Received_Hash[256] = {0}, String_Computed_Hash[256] = {0};
+		int i;
+		
 		Log(LOG_ERR, "[Security.SecurityReceiveRobotControlMessage] Error : received and computed hashes do not match.");
+		
+		for (i = 0; i < UTILS_HASH_SIZE_BYTES; i++)
+		{
+			sprintf(String_Received_Hash, "%s%02X ", String_Received_Hash, Message.Hash[i]);
+			sprintf(String_Computed_Hash, "%s%02X ", String_Computed_Hash, Computed_Hash[i]);
+		}
+		Log(LOG_DEBUG, "[Security.SecurityReceiveRobotControlMessage] Received hash : %s.", String_Received_Hash);
+		Log(LOG_DEBUG, "[Security.SecurityReceiveRobotControlMessage] Computed hash : %s.", String_Computed_Hash);
 		return 0;
 	}
 
