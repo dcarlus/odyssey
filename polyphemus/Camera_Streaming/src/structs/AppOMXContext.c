@@ -29,7 +29,7 @@
 
 
 /** @brief  Global variable used by the signal handler and capture/encoding loop. */
-static int WantToQuit = 0 ;
+int WantToQuit = 0 ;
 
 
                                                            /** CONFIGURATION **/
@@ -391,10 +391,6 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
     char bufferData[65567] ;                                                    // Buffer used to write sent informations
     StreamingServer* ss = &(self -> streamingServer) ;                          // Shortcut to the streaming server object
 
-    signal(SIGINT,  _AppOMXContext_SignalHandler) ;
-    signal(SIGTERM, _AppOMXContext_SignalHandler) ;
-    signal(SIGQUIT, _AppOMXContext_SignalHandler) ;
-
     while (1) {
         if (!WantToQuit && (self -> clientSocket == -2)) {
             log_printer("Server ready to stream video") ;
@@ -496,22 +492,16 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
         log_printer("Stop video streaming...") ;
     }
 
-    // End the capture...
-    // Restore signal handlers
-    signal(SIGINT,  SIG_DFL) ;
-    signal(SIGTERM, SIG_DFL) ;
-    signal(SIGQUIT, SIG_DFL) ;
-
-    _AppOMXContext_StopCapturing(self) ;
-    _AppOMXContext_FlushBuffers(self) ;
-    _AppOMXContext_DisablePorts(self) ;
-    _AppOMXContext_FreeBuffers(self) ;
-    _AppOMXContext_SetComponentsAsLoaded(self) ;
+/*    _AppOMXContext_StopCapturing(self) ;*/
+/*    _AppOMXContext_FlushBuffers(self) ;*/
+/*    _AppOMXContext_DisablePorts(self) ;*/
+/*    _AppOMXContext_FreeBuffers(self) ;*/
+/*    _AppOMXContext_SetComponentsAsLoaded(self) ;*/
 
     // Close the output file
     log_printer("Server shutdowns\n") ;
     ss -> close(ss) ;
-    vcos_semaphore_delete(&(self -> handlerLock)) ;
+/*    vcos_semaphore_delete(&(self -> handlerLock)) ;*/
     testError(OMX_Deinit(), "OMX de-initalization failed") ;
 }
 
@@ -545,9 +535,9 @@ static void _AppOMXContext_Init(AppOMXContext* self) {
 
     // Initialize data
     #ifdef NETWORK_WIFI
-        self -> streamingServer = StreamingServer_Construct("192.168.100.1", 9587) ;
+        self -> streamingServer = StreamingServer_Construct("10.10.0.1", 9587) ;
     #else
-        self -> streamingServer = StreamingServer_Construct("192.168.100.1", 9587) ;
+        self -> streamingServer = StreamingServer_Construct("192.168.0.2", 9587) ;
     #endif
     self -> camera = CameraBufferHandler_Construct() ;
     self -> encoder = EncoderBufferHandler_Construct() ;

@@ -13,7 +13,7 @@ StreamingClient* StreamingClient::Instance = 0 ;
 
 
     #ifdef WIFI_NETWORK
-        StreamingClient::StreamingClient() : Client("192.168.100.1", 9587) {
+        StreamingClient::StreamingClient() : Client("10.10.0.1", 9587) {
     #else
         StreamingClient::StreamingClient() : Client("192.168.0.2", 9587) {
     #endif

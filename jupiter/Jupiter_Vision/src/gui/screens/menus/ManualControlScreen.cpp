@@ -155,36 +155,36 @@ void ManualControlScreen::keyReleased(int keycode) {}
 
 
 void ManualControlScreen::MoveAhead::run() {
-    CommandClient::getInstance() -> sendMoveCommand(ROBOT_COMMAND_FORWARD) ;
+    //CommandClient::getInstance() -> sendMoveCommand(ROBOT_COMMAND_FORWARD) ;
 }
 
 void ManualControlScreen::MoveBack::run() {
-    CommandClient::getInstance() -> sendMoveCommand(ROBOT_COMMAND_BACKWARD) ;
+    //CommandClient::getInstance() -> sendMoveCommand(ROBOT_COMMAND_BACKWARD) ;
 }
 
 void ManualControlScreen::TurnRight::run() {
-    CommandClient::getInstance() -> sendMoveCommand(ROBOT_COMMAND_RIGHT) ;
+    //CommandClient::getInstance() -> sendMoveCommand(ROBOT_COMMAND_RIGHT) ;
 }
 
 void ManualControlScreen::TurnLeft::run() {
-    CommandClient::getInstance() -> sendMoveCommand(ROBOT_COMMAND_LEFT) ;
+    //CommandClient::getInstance() -> sendMoveCommand(ROBOT_COMMAND_LEFT) ;
 }
 
 void ManualControlScreen::Stop::run() {
-    CommandClient::getInstance() -> sendMoveCommand(ROBOT_COMMAND_STOP) ;
+    //CommandClient::getInstance() -> sendMoveCommand(ROBOT_COMMAND_STOP) ;
 }
 
 void ManualControlScreen::LED::run() {
-    CommandClient::getInstance() -> sendLEDCommand() ;
+    //CommandClient::getInstance() -> sendLEDCommand() ;
 }
 
 void ManualControlScreen::BatteryLoad::run() {
-    AlIcon* loadIcon = ((AlIcon*) (home -> getComponent("battery_filling"))) ;
-    char loadRate ;
+//    AlIcon* loadIcon = ((AlIcon*) (home -> getComponent("battery_filling"))) ;
+//    char loadRate ;
 
-    while (ContinueBatteryThread) {
-        loadRate = CommandClient::getInstance() -> getBatteryLoadRate() ;
-        loadIcon -> resize(loadRate, 100) ;
-        sleep(5) ;
-    }
+//    while (ContinueBatteryThread) {
+//        loadRate = CommandClient::getInstance() -> getBatteryLoadRate() ;
+//        loadIcon -> resize(loadRate, 100) ;
+//        sleep(5) ;
+//    }
 }

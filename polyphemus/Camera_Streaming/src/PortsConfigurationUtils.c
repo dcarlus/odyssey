@@ -124,7 +124,7 @@ void allocateBuffers(AppOMXContext* ctx) {
 
 void portsReady(AppOMXContext* ctx) {
     OMX_HANDLETYPE* camera = ctx -> getCamera(ctx) ;
-    OMX_HANDLETYPE* encoder = ctx -> getEncoder(ctx) ;
+/*    OMX_HANDLETYPE* encoder = ctx -> getEncoder(ctx) ;*/
     OMX_HANDLETYPE* nullSink = ctx -> getNullSink(ctx) ;
 
     log_printer("Switching state of the camera component to executing...") ;

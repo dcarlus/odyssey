@@ -110,6 +110,7 @@ static void configureNullSink(AppOMXContext* ctx) {
 
 
 int mainStreaming() {
+/*int main() {*/
     // Prepare the application context to get video stream
     AppOMXContext ctx = AppOMXContext_Construct() ;
     initAppOMX(&ctx) ;
