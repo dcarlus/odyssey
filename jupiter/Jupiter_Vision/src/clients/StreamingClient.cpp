@@ -1,4 +1,5 @@
 #include "StreamingClient.h"
+#include "../gui/VideoTexture.h"
 #include "../picture/SocketPicture.h"
 #include <assert.h>
 #include <pthread.h>
@@ -8,24 +9,27 @@
 using namespace std ;
 using namespace es ;
 
-StreamingClient StreamingClient::Instance ;
+StreamingClient* StreamingClient::Instance = 0 ;
 
 
     #ifdef WIFI_NETWORK
-        StreamingClient::StreamingClient() : Client("10.10.0.1", 9587) {}
+        StreamingClient::StreamingClient() : Client("192.168.100.1", 9587) {
     #else
-        StreamingClient::StreamingClient() : Client("192.168.0.2", 9587) {}
+        StreamingClient::StreamingClient() : Client("192.168.0.2", 9587) {
     #endif
+    }
 
 StreamingClient::~StreamingClient() throw() {}
 
 StreamingClient* StreamingClient::getInstance() {
-    return &Instance ;
+    if (Instance == 0)
+        Instance = new StreamingClient() ;
+    return Instance ;
 }
 
 
 void* StreamingClient::manageThread(void* param) {
-    Instance.run() ;
+    Instance -> run() ;
     return 0 ;
 }
 
@@ -33,7 +37,7 @@ void StreamingClient::createThread() {
     pthread_t clientThread ;
 
     assert(pthread_create(&clientThread, 0, &StreamingClient::manageThread, 0) == 0) ;
-    pthread_join(clientThread, 0) ;
+//    pthread_join(clientThread, 0) ;
 }
 
 void StreamingClient::run() {
@@ -59,10 +63,15 @@ void StreamingClient::run() {
                     int width = m_decoder.getWidth() ;
                     int height = m_decoder.getHeight() ;
 
+                    // Set the data for display
+                    VideoTexture::getInstance() -> update(rawBuffer, width, height) ;
+
+                    // Set the data used for image processing
                     pic.setData(rawBuffer, rawSize, width, height) ;
                     pic.display() ;
                     m_decoder.freeBuffer(rawBuffer) ;
                 }
             }
+        }
     }
 }

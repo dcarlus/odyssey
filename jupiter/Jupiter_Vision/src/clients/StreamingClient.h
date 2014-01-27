@@ -8,7 +8,7 @@
 class StreamingClient : public es::Client, private NoCopy {
     private:
         /** @brief  Unique instance of the streaming client. */
-        static StreamingClient Instance ;
+        static StreamingClient* Instance ;
         /** @brief  Decoder used by the client to get uncompressed picture data. */
         H264Decoder m_decoder ;
 

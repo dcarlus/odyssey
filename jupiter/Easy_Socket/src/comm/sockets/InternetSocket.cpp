@@ -5,7 +5,6 @@ using namespace std ;
 using namespace es ;
 
 InternetSocket::InternetSocket(int type,
-                               bool blockingIO,
                                const string& protocol)
                                     throw (SocketException) : m_isBound(false),
                                                               m_isPrepared(false),
@@ -24,21 +23,9 @@ InternetSocket::InternetSocket(int type,
 
     // Get a socket descriptor
     m_socketDesc = socket(AF_INET, type, protocol_number) ;
-
     if (m_socketDesc == -1) {
         throw SocketException() ;
     }
-
-
-    // Set the blocking mode on socket I/O
-    char blockMode ;
-    if (blockingIO)
-        // Enable blocking
-        blockMode = 0 ;
-    else
-        // Disable blocking
-        blockMode = 1 ;
-    ioctl(m_socketDesc, FIONBIO, &blockMode) ;
 }
 
 InternetSocket::~InternetSocket() {
