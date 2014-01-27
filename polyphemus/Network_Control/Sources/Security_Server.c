@@ -49,6 +49,9 @@ static unsigned char AES_Initialization_Vector[AES_BLOCK_SIZE_BYTES];
 /** Tell which client is authenticated. */
 static int Client_Index;
 
+/** Pre allocated video buffer in data segment to avoid allocating too much data on the stack. */
+static unsigned char Encrypted_Video_Buffer[SECURITY_VIDEO_BUFFER_MAXIMUM_SIZE_BYTES];
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Public functions
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -191,6 +194,41 @@ int SecurityServerReceiveRobotCommand(int Socket_Client, TRobotCommand *Pointer_
 int SecurityServerSendRobotData(int Socket_Client, int Data)
 {
 	return SecuritySendRobotControlMessage(Socket_Client, Pointer_AES_Context_Output_Data, Data);
+}
+
+int SecurityServerSendVideoBuffer(int Socket_Client, void *Pointer_Buffer, int Buffer_Size)
+{
+	int Encrypted_Buffer_Size;
+	
+	// Can't encrypt more than maximum buffer size
+	if (Buffer_Size > SECURITY_VIDEO_BUFFER_MAXIMUM_SIZE_BYTES)
+	{
+		Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : buffer to send is too big (%d bytes).", Buffer_Size);
+		return 0;
+	}
+
+	// Cipher buffer
+	if (EVP_EncryptUpdate(Pointer_AES_Context_Output_Video, Encrypted_Video_Buffer, &Encrypted_Buffer_Size, Pointer_Buffer, Buffer_Size) == 0)
+	{
+		Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : could not cipher AES message.");
+		return 0;
+	}
+
+	// Check ciphered buffer size
+	if (Encrypted_Buffer_Size != Buffer_Size)
+	{
+		Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : bad ciphered buffer size (%d bytes).", Encrypted_Buffer_Size);
+		return 0;
+	}
+
+	// Send encrypted buffer
+	if (write(Socket_Client, Encrypted_Video_Buffer, Buffer_Size) != Buffer_Size)
+	{
+		Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : could not write to socket.");
+		return 0;
+	}
+
+	return 1;
 }
 
 void SecurityServerQuit(void)

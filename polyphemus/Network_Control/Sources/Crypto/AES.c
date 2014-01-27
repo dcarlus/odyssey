@@ -13,7 +13,7 @@ EVP_CIPHER_CTX* AESCreate()
 	OpenSSL_add_all_algorithms();
 	OPENSSL_config(NULL);
 	if (!(ctx = EVP_CIPHER_CTX_new())) handleErrors();
-	//EVP_CIPHER_CTX_set_padding(ctx,0);
+	EVP_CIPHER_CTX_set_padding(ctx,0);
 	return ctx;
 }
 

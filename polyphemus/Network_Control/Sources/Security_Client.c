@@ -45,6 +45,9 @@ static unsigned char AES_Key[AES_KEY_SIZE_BYTES];
 /** AES initialization vector (IV). */
 static unsigned char AES_Initialization_Vector[AES_BLOCK_SIZE_BYTES];
 
+/** Pre allocated video buffer in data segment to avoid allocating too much data on the stack. */
+static unsigned char Encrypted_Video_Buffer[SECURITY_VIDEO_BUFFER_MAXIMUM_SIZE_BYTES];
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Public functions
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -176,6 +179,37 @@ int SecurityClientReceiveRobotData(int Socket_Server, int *Pointer_Data)
 {
 	return SecurityReceiveRobotControlMessage(Socket_Server, Pointer_AES_Context_Input_Data, Pointer_Data);
 }
+
+/*int SecurityClientReceiveVideoBuffer(int Socket_Server, void *Pointer_Received_Buffer, int *Pointer_Received_Buffer_Size)
+{
+	TSecurityMessageRobotControl Message;
+	unsigned char Encrypted_Message[AES_CIPHERED_MESSAGE_SIZE_BYTES(sizeof(Message))], Decrypted_Message[AES_CIPHERED_MESSAGE_SIZE_BYTES(sizeof(Message))], Computed_Hash[UTILS_HASH_SIZE_BYTES];
+	int Received_Buffer_Size;
+
+	// Receive encrypted buffer
+	Received_Buffer_Size = read(Socket_Server, Encrypted_Video_Buffer, sizeof(Encrypted_Video_Buffer));
+	if (Received_Buffer_Size <= 0)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not retrieve buffer from socket (received buffer size is %d bytes).", Received_Buffer_Size);
+		return 0;
+	}
+
+	// Decipher buffer
+	if (EVP_DecryptUpdate(Pointer_AES_Context, Pointer_Received_Buffer, Pointer_Received_Buffer_Size, Encrypted_Video_Buffer, Received_Buffer_Size) == 0)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not decipher AES buffer.");
+		return 0;
+	}
+
+	// Check plaintext buffer size
+	if (*Pointer_Received_Buffer_Size != Received_Buffer_Size)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : bad deciphered buffer size (%d bytes).", *Pointer_Received_Buffer_Size);
+		return 0;
+	}
+
+	return 1;
+}*/
 
 void SecurityClientQuit(void)
 {

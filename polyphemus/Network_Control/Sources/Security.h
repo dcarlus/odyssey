@@ -17,7 +17,10 @@
 // Constants
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 /** Size in bytes of a command message payload. */
-#define SECURITY_MESSAGE_ROBOT_CONTROL_PAYLOAD_SIZE_BYTES (sizeof(TSecurityMessageRobotControl) - UTILS_HASH_SIZE_BYTES)
+#define SECURITY_MESSAGE_ROBOT_CONTROL_PAYLOAD_SIZE_BYTES (sizeof(TSecurityMessageRobotControl) -12  - UTILS_HASH_SIZE_BYTES)
+
+/** Maximum video streaming buffer size in bytes. */
+#define SECURITY_VIDEO_BUFFER_MAXIMUM_SIZE_BYTES 65567
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Types
@@ -37,6 +40,7 @@ typedef struct __attribute__((packed))
 {
 	int Data; //! The message data.
 	char Hash[UTILS_HASH_SIZE_BYTES]; //! Hash of the message payload used to check integrity.
+	char Padding[12]; //! Padding needed to alignate message on AES blocks size.
 } TSecurityMessageRobotControl;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -5,6 +5,7 @@
  * @version 1.1 : 09/01/2014, added debugging function.
  * @version 1.2 : 11/01/2014, debug is now written to syslog and server is a daemon.
  * @version 1.3 : 14/01/2014, added security.
+ * @version 1.4 : 27/01/2014, merged with video streaming server.
  */
 #include <stdio.h>
 #include <unistd.h> // For read(), write()...
@@ -16,6 +17,9 @@
 #include "Security_Server.h"
 #include "Log.h"
 #include "Crypto/Utils.h"
+
+/** The streaming video entry point. */
+extern void mainStreaming(void);
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Private variables
@@ -46,6 +50,15 @@ static void *ThreadReadBatteryVoltage(void *Pointer_Parameters)
 		usleep(1000000);
 	}
 
+	// Only to make gcc happy
+	return NULL;
+}
+
+/** Run streaming server. */
+static void *ThreadVideoStreaming(void *Pointer_Parameters)
+{
+	//while (1) mainStreaming();
+	
 	// Only to make gcc happy
 	return NULL;
 }
@@ -127,7 +140,12 @@ int main(int argc, char *argv[])
 		Log(LOG_ERR, "Error : can't create battery voltage thread.");
 		return -1;
 	}
-
+	if (pthread_create(&Thread_ID, NULL, ThreadVideoStreaming, NULL) != 0)
+	{
+		Log(LOG_ERR, "Error : can't create video streaming thread.");
+		return -1;
+	}
+	
 	// Create server
 	Socket_Server = NetworkServerCreate(String_Server_IP, Server_Port);
 	if (Socket_Server == -1)

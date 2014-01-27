@@ -48,6 +48,15 @@ int SecurityServerReceiveRobotCommand(int Socket_Client, TRobotCommand *Pointer_
  */
 int SecurityServerSendRobotData(int Socket_Client, int Data);
 
+/** Send video streaming data to the client.
+ * @param Socket_Client The recipient of the video stream.
+ * @param Pointer_Buffer The data to send.
+ * @param Buffer_Size Size of the buffer in bytes.
+ * @return 1 if the data was successfully sent or 0 if the connection dropped.
+ * @warning The maximum buffer size that can be sent is defined by macro SECURITY_VIDEO_BUFFER_MAXIMUM_SIZE_BYTES.
+ */
+int SecurityServerSendVideoBuffer(int Socket_Client, void *Pointer_Buffer, int Buffer_Size);
+
 /** Free allocated resources. */
 void SecurityServerQuit(void);
 

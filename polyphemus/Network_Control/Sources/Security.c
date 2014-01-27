@@ -381,13 +381,14 @@ int SecuritySendRobotControlMessage(int Socket_Destination, EVP_CIPHER_CTX *Poin
 int SecurityReceiveRobotControlMessage(int Socket_Source, EVP_CIPHER_CTX *Pointer_AES_Context, int *Pointer_Received_Data)
 {
 	TSecurityMessageRobotControl Message;
-	unsigned char Encrypted_Message[AES_CIPHERED_MESSAGE_SIZE_BYTES(sizeof(Message))], Decrypted_Message[AES_CIPHERED_MESSAGE_SIZE_BYTES(sizeof(Message))], Computed_Hash[UTILS_HASH_SIZE_BYTES];
-	int Decrypted_Message_Size;
+	unsigned char Encrypted_Message[sizeof(Message)]/*AES_CIPHERED_MESSAGE_SIZE_BYTES(sizeof(Message))*/, Decrypted_Message[/*AES_CIPHERED_MESSAGE_SIZE_BYTES(sizeof(Message))*/sizeof(Message)], Computed_Hash[UTILS_HASH_SIZE_BYTES];
+	int Decrypted_Message_Size, Received_Message_Size;
 
 	// Receive ciphered message
-	if (read(Socket_Source, Encrypted_Message, sizeof(Encrypted_Message)) != sizeof(Encrypted_Message))
+	Received_Message_Size = read(Socket_Source, Encrypted_Message, sizeof(Encrypted_Message));
+	if (Received_Message_Size !=  sizeof(Encrypted_Message))
 	{
-		Log(LOG_ERR, "[Security.SecurityReceiveRobotControlMessage] Error : could not retrieve message from socket.");
+		Log(LOG_ERR, "[Security.SecurityReceiveRobotControlMessage] Error : could not retrieve message from socket (received message size is %d bytes).", Received_Message_Size);
 		return 0;
 	}
 
