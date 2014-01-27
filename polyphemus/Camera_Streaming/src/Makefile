@@ -46,7 +46,7 @@ export ROOT_DIR
 #### RULES ####
 all: infoCompilation MakeOBJ
 	@echo Compiling $(BINARY)
-	$(CC) $(CCOPTS) $(INCLUDES) $(LIBS) $(OBJ_DIR)/*.o -o $(BINARY_DIR)/$(BINARY)
+	#$(CC) $(CCOPTS) $(INCLUDES) $(LIBS) $(OBJ_DIR)/*.o -o $(BINARY_DIR)/$(BINARY)
 
 infoCompilation:
 	@echo $(ECHO_DEBUG)

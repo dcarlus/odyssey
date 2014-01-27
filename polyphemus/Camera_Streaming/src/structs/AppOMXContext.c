@@ -545,9 +545,9 @@ static void _AppOMXContext_Init(AppOMXContext* self) {
 
     // Initialize data
     #ifdef NETWORK_WIFI
-        self -> streamingServer = StreamingServer_Construct("10.10.0.1", 9587) ;
+        self -> streamingServer = StreamingServer_Construct("192.168.100.1", 9587) ;
     #else
-        self -> streamingServer = StreamingServer_Construct("192.168.0.2", 9587) ;
+        self -> streamingServer = StreamingServer_Construct("192.168.100.1", 9587) ;
     #endif
     self -> camera = CameraBufferHandler_Construct() ;
     self -> encoder = EncoderBufferHandler_Construct() ;

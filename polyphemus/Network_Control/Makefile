@@ -1,17 +1,22 @@
 CC = gcc
 CCFLAGS = -Wall -g
 #-O3
-LIBRARIES = -pthread -lgmp -lssl -lcrypto
+LIBRARIES = -pthread -lgmp -lssl -lcrypto -L/opt/vc/lib -lopenmaxil
 
 OBJECTS_PATH = Objects
 SOURCES_PATH = Sources
 SOURCES_CRYPTO_PATH = $(SOURCES_PATH)/Crypto
+CAMERA_STREAMING_PATH = ../Camera_Streaming
+NETWORK_CONTROL_PATH = `pwd`
 
 OBJECTS_CRYPTO = $(OBJECTS_PATH)/Elliptic_Curves.o $(OBJECTS_PATH)/Point.o $(OBJECTS_PATH)/Utils.o $(OBJECTS_PATH)/AES.o $(OBJECTS_PATH)/DSA.o
 OBJECTS = $(OBJECTS_CRYPTO) $(OBJECTS_PATH)/Main.o $(OBJECTS_PATH)/UART.o $(OBJECTS_PATH)/Robot.o $(OBJECTS_PATH)/Network.o $(OBJECTS_PATH)/Security.o $(OBJECTS_PATH)/Log.o $(OBJECTS_PATH)/Security_Server.o
 
 all: $(OBJECTS)
-	$(CC) $(CCFLAGS) $(OBJECTS) -o Network_Control $(LIBRARIES)
+	@cd $(CAMERA_STREAMING_PATH)/src && $(MAKE) && cd $(NETWORK_CONTROL_PATH)
+	@cp $(CAMERA_STREAMING_PATH)/build/obj/*.o $(OBJECTS_PATH)
+	#$(CC) $(CCFLAGS) $(OBJECTS) -o Network_Control $(LIBRARIES)
+	$(CC) $(CCFLAGS) $(OBJECTS_PATH)/*.o -o Network_Control $(LIBRARIES)
 
 $(OBJECTS_PATH)/Main.o: $(SOURCES_PATH)/Main.c $(SOURCES_PATH)/UART.h $(SOURCES_PATH)/Robot.h $(SOURCES_PATH)/Network.h $(SOURCES_PATH)/Log.h $(SOURCES_PATH)/Security_Server.h
 	$(CC) $(CCFLAGS) -c $(SOURCES_PATH)/Main.c -o $(OBJECTS_PATH)/Main.o
@@ -50,4 +55,5 @@ $(OBJECTS_PATH)/DSA.o: $(SOURCES_CRYPTO_PATH)/DSA.c $(SOURCES_CRYPTO_PATH)/DSA.h
 	$(CC) $(CCFLAGS) -c $(SOURCES_CRYPTO_PATH)/DSA.c -o $(OBJECTS_PATH)/DSA.o
 
 clean:
+	@cd $(CAMERA_STREAMING_PATH)/src && $(MAKE) clean && cd $(NETWORK_CONTROL_PATH)
 	rm -f $(OBJECTS) Network_Control
