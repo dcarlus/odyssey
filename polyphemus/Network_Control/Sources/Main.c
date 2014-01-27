@@ -57,7 +57,7 @@ static void *ThreadReadBatteryVoltage(void *Pointer_Parameters)
 /** Run streaming server. */
 static void *ThreadVideoStreaming(void *Pointer_Parameters)
 {
-	//while (1) mainStreaming();
+	while (1) mainStreaming();
 	
 	// Only to make gcc happy
 	return NULL;
