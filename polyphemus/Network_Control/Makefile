@@ -56,4 +56,4 @@ $(OBJECTS_PATH)/DSA.o: $(SOURCES_CRYPTO_PATH)/DSA.c $(SOURCES_CRYPTO_PATH)/DSA.h
 
 clean:
 	@cd $(CAMERA_STREAMING_PATH)/src && $(MAKE) clean && cd $(NETWORK_CONTROL_PATH)
-	rm -f $(OBJECTS) Network_Control
+	rm -f $(OBJECTS_PATH)/* Network_Control
