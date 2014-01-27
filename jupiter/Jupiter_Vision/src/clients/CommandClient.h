@@ -40,6 +40,9 @@ class CommandClient : public es::Client, private NoCopy {
         /** @brief   Send a LED command to switch its state. */
         void sendLEDCommand() ;
 
+        /** @brief   Receive the battery load. */
+        char getBatteryLoadRate() ;
+
 
     protected:
         /** @brief  Intermediate function to easily create a thread. */

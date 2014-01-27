@@ -27,6 +27,13 @@ class ManualControlScreen : public ControlScreen {
 
     protected:
         /**
+         * @brief   Create a thread to update the battery load.
+         * @param   execution   The action to execute.
+         */
+        static void* updateBattery(void* execution) ;
+
+
+        /**
          * @brief   Action to move Mercury ahead.
          * @author  Denis CARLUS
          * @version 1.0 26/01/2014
@@ -82,6 +89,16 @@ class ManualControlScreen : public ControlScreen {
          * @version 1.0 26/01/2014
          */
         class LED : public AlAbstractAction {
+            /** @brief  Run the action. */
+            virtual void run() ;
+        } ;
+
+        /**
+         * @brief   Action to get the battery load.
+         * @author  Denis CARLUS
+         * @version 1.0 26/01/2014
+         */
+        class BatteryLoad : public AlAbstractAction {
             /** @brief  Run the action. */
             virtual void run() ;
         } ;

@@ -61,3 +61,10 @@ void CommandClient::sendLEDCommand() {
     else
         SecurityClientSendRobotCommand(m_socket.getSocket(), ROBOT_COMMAND_LED_OFF) ;
 }
+
+char CommandClient::getBatteryLoadRate() {
+    int loadRate ;
+    SecurityClientSendRobotCommand(m_socket.getSocket(), ROBOT_COMMAND_READ_BATTERY_VOLTAGE) ;
+    SecurityClientReceiveRobotData(m_socket.getSocket(), &loadRate) ;
+    return (char) loadRate ;
+}

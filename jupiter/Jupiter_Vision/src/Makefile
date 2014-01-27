@@ -63,7 +63,7 @@ infoCompilation:
 	@$(CC) $(CCOPT) -o $(OBJ_DIR)/$@ -c $< $(INCLUDES)
 
 MakeOBJ: $(OBJ)
-	@cd $(NETWORK_CONTROL_DIR) && $(MAKE)
+	@cd $(NETWORK_CONTROL_DIR) && $(MAKE) JUPITER_COMPILING=1
 	@cp $(NETWORK_CONTROL_DIR)/Objects/*.o $(OBJ_DIR)
 	@rm $(OBJ_DIR)/Main.o
 	@cd clients && $(MAKE)
