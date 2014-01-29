@@ -1,0 +1,29 @@
+Components list
+---------------
+
+C1 : electrolytic capacitor 10 µF
+C2 : tantalum capacitor 10 µF
+C3 : electrolytic capacitor 470 µF
+C4 : ceramic capacitor 15 pF
+C5 : ceramic capacitor 15 pF
+
+D1 : LED
+D2 : LED
+
+R1 : resistor 220 ohm 5%
+R2 : resistor 10K ohm 5%
+R3 : resistor 330 ohm 5%
+R4 : resistor 1.8K ohm 5%
+R5 : resistor 3.3K ohm 5%
+R6 : resistor 1K ohm 5%
+R7 : resistor 1K ohm 5%
+R8 : resistor 1K ohm 5%
+
+M1 : full rotation servomotor powered at 5V
+M2 : full rotation servomotor powered at 5V
+The servomotors used in the robot are DGServo S04NF STD.
+
+U1 : linear voltage regulator LM1085-5.0 with output fixed at 5V
+U2 : microcontroller PIC16F876
+
+X1 : crystal 3.6864 MHz
