@@ -18,8 +18,10 @@
 #include "Log.h"
 #include "Crypto/Utils.h"
 
-/** The streaming video entry point. */
+/** The streaming video server entry point. */
 extern void mainStreaming(void);
+/** Control the state of the streaming server. */
+extern int WantToQuit;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Private variables
@@ -57,10 +59,16 @@ static void *ThreadReadBatteryVoltage(void *Pointer_Parameters)
 /** Run streaming server. */
 static void *ThreadVideoStreaming(void *Pointer_Parameters)
 {
-    #ifdef ENABLE_STREAMING
-	    while (1) mainStreaming();
-	#endif
-	
+	while (1)
+	{
+		mainStreaming();
+
+		// Stop control server
+		close(Socket_Client);
+
+		Log(LOG_DEBUG, "Client disconnected from streaming server, closing all ports.");
+	}
+
 	// Only to make gcc happy
 	return NULL;
 }
@@ -68,13 +76,29 @@ static void *ThreadVideoStreaming(void *Pointer_Parameters)
 /** Called when the SIGTERM signal is received, stop the server.
  * @param Signal_Number The signal which triggered the handler.
  */
-static void SignalHandler(int Signal_Number)
+static void SignalHandlerTerm(int Signal_Number)
 {
+	// Stop streaming server
+	WantToQuit = 1;
+
 	SecurityServerQuit();
 	close(Socket_Client);
 	close(Socket_Server);
 	Log(LOG_INFO, "Server successfully exited.");
 	exit(0);
+}
+
+/** Called when the SIGTERM signal is received, stop the server.
+ * @param Signal_Number The signal which triggered the handler.
+ */
+static void SignalHandlerPipe(int Signal_Number)
+{
+	// Stop streaming server
+	WantToQuit = 1;
+	// Stop control server
+	close(Socket_Client);
+
+	Log(LOG_INFO, "Client connection dropped, closing all ports.");
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -142,12 +166,16 @@ int main(int argc, char *argv[])
 		Log(LOG_ERR, "Error : can't create battery voltage thread.");
 		return -1;
 	}
-	if (pthread_create(&Thread_ID, NULL, ThreadVideoStreaming, NULL) != 0)
-	{
-		Log(LOG_ERR, "Error : can't create video streaming thread.");
-		return -1;
-	}
-	
+
+	#ifdef ENABLE_STREAMING
+		if (pthread_create(&Thread_ID, NULL, ThreadVideoStreaming, NULL) != 0)
+		{
+			Log(LOG_ERR, "Error : can't create video streaming thread.");
+			return -1;
+		}
+		Log(LOG_DEBUG, "Streaming is enabled.");
+	#endif
+
 	// Create server
 	Socket_Server = NetworkServerCreate(String_Server_IP, Server_Port);
 	if (Socket_Server == -1)
@@ -162,10 +190,18 @@ int main(int argc, char *argv[])
 	}
 
 	// Set a new signal handler for SIGTERM, which is sent to stop the daemon
-	Signal_Action.sa_handler = SignalHandler;
+	Signal_Action.sa_handler = SignalHandlerTerm;
 	if (sigaction(SIGTERM, &Signal_Action, NULL) == -1)
 	{
-		Log(LOG_ERR, "Error : can't register signal handler.");
+		Log(LOG_ERR, "Error : can't register term signal handler.");
+		return -1;
+	}
+
+	// Set a new signal handler for SIGPIPE, which is sent when a socket link breaks
+	Signal_Action.sa_handler = SignalHandlerPipe;
+	if (sigaction(SIGPIPE, &Signal_Action, NULL) == -1)
+	{
+		Log(LOG_ERR, "Error : can't register pipe signal handler.");
 		return -1;
 	}
 

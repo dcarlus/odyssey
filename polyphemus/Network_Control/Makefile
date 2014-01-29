@@ -13,25 +13,30 @@ OBJECTS_CRYPTO = $(OBJECTS_PATH)/Elliptic_Curves.o $(OBJECTS_PATH)/Point.o $(OBJ
 OBJECTS = $(OBJECTS_CRYPTO) $(OBJECTS_PATH)/Main.o $(OBJECTS_PATH)/UART.o $(OBJECTS_PATH)/Robot.o $(OBJECTS_PATH)/Network.o $(OBJECTS_PATH)/Security.o $(OBJECTS_PATH)/Log.o $(OBJECTS_PATH)/Security_Server.o $(OBJECTS_PATH)/Security_Client.o
 
 TARGET_ALL=
-DEFINED_TAGS=
+INFO_PLATFORM=
 ifdef JUPITER_COMPILING
+    INFO_PLATFORM = "Compiling on Jupiter"
     TARGET_ALL = MakeForJupiter
 else
+    INFO_PLATFORM = "Compiling on Polyphemus"
     TARGET_ALL = MakeForPolyphemus
     LIBRARIES += -L/opt/vc/lib -lopenmaxil
-    DEFINED_TAGS = -DENABLE_STREAMING
+    CCFLAGS += -DENABLE_STREAMING
 endif
 
-all: $(TARGET_ALL)
+all: InfoPlatform $(TARGET_ALL)
+
+InfoPlatform:
+	@echo $(INFO_PLATFORM)
 
 MakeForJupiter: $(OBJECTS)
-	$(CC) $(CCFLAGS) $(OBJECTS_PATH)/*.o -o Network_Control $(LIBRARIES) $(DEFINED_TAGS)
+	$(CC) $(CCFLAGS) $(OBJECTS_PATH)/*.o -o Network_Control $(LIBRARIES)
 
 MakeForPolyphemus: $(OBJECTS)
-	@cd $(CAMERA_STREAMING_PATH)/src && $(MAKE) && cd $(NETWORK_CONTROL_PATH)
+	@cd $(CAMERA_STREAMING_PATH)/src && $(MAKE) WIFI=1 NDEBUG=1 && cd $(NETWORK_CONTROL_PATH)
 	@cp $(CAMERA_STREAMING_PATH)/build/obj/*.o $(OBJECTS_PATH)
-	#$(CC) $(CCFLAGS) $(OBJECTS) -o Network_Control $(LIBRARIES)
-	$(CC) $(CCFLAGS) $(OBJECTS_PATH)/*.o -o Network_Control $(LIBRARIES) $(DEFINED_TAGS)
+	@#$(CC) $(CCFLAGS) $(OBJECTS) -o Network_Control $(LIBRARIES)
+	$(CC) $(CCFLAGS) $(OBJECTS_PATH)/*.o -o Network_Control $(LIBRARIES)
 
 #all: $(OBJECTS)
 #	@cd $(CAMERA_STREAMING_PATH)/src && $(MAKE) && cd $(NETWORK_CONTROL_PATH)

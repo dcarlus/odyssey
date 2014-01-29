@@ -180,22 +180,20 @@ int SecurityClientReceiveRobotData(int Socket_Server, int *Pointer_Data)
 	return SecurityReceiveRobotControlMessage(Socket_Server, Pointer_AES_Context_Input_Data, Pointer_Data);
 }
 
-/*int SecurityClientReceiveVideoBuffer(int Socket_Server, void *Pointer_Received_Buffer, int *Pointer_Received_Buffer_Size)
+int SecurityClientReceiveVideoBuffer(int Socket_Server, void *Pointer_Received_Buffer, int *Pointer_Received_Buffer_Size)
 {
-	TSecurityMessageRobotControl Message;
-	unsigned char Encrypted_Message[AES_CIPHERED_MESSAGE_SIZE_BYTES(sizeof(Message))], Decrypted_Message[AES_CIPHERED_MESSAGE_SIZE_BYTES(sizeof(Message))], Computed_Hash[UTILS_HASH_SIZE_BYTES];
 	int Received_Buffer_Size;
 
 	// Receive encrypted buffer
 	Received_Buffer_Size = read(Socket_Server, Encrypted_Video_Buffer, sizeof(Encrypted_Video_Buffer));
 	if (Received_Buffer_Size <= 0)
 	{
-		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not retrieve buffer from socket (received buffer size is %d bytes).", Received_Buffer_Size);
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not receive data from socket (received buffer size is %d bytes).", Received_Buffer_Size);
 		return 0;
 	}
 
 	// Decipher buffer
-	if (EVP_DecryptUpdate(Pointer_AES_Context, Pointer_Received_Buffer, Pointer_Received_Buffer_Size, Encrypted_Video_Buffer, Received_Buffer_Size) == 0)
+	if (EVP_DecryptUpdate(Pointer_AES_Context_Input_Video, Pointer_Received_Buffer, Pointer_Received_Buffer_Size, Encrypted_Video_Buffer, Received_Buffer_Size) == 0)
 	{
 		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not decipher AES buffer.");
 		return 0;
@@ -209,7 +207,7 @@ int SecurityClientReceiveRobotData(int Socket_Server, int *Pointer_Data)
 	}
 
 	return 1;
-}*/
+}
 
 void SecurityClientQuit(void)
 {
