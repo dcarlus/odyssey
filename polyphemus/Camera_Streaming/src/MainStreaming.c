@@ -112,10 +112,10 @@ static void configureNullSink(AppOMXContext* ctx) {
 
 
 
-int mainStreaming() {
+int mainStreaming(char* ip) {
 /*int main() {*/
     // Prepare the application context to get video stream
-    AppOMXContext ctx = AppOMXContext_Construct() ;
+    AppOMXContext ctx = AppOMXContext_Construct(ip) ;
     initAppOMX(&ctx) ;
     configureCamera(&ctx) ;
     configureEncoder(&ctx) ;

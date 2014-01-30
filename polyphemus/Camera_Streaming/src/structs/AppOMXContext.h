@@ -58,7 +58,7 @@ typedef struct AppOMXContext {
 
 
 /** @brief  Create a new AppOMXContext. */
-AppOMXContext AppOMXContext_Construct() ;
+AppOMXContext AppOMXContext_Construct(char* ip) ;
 
 /** @brief  memset() on an AppOMXContext with the right initialization*/
 void* AppOMXContext_Memset(AppOMXContext* self, int c, size_t n) ;

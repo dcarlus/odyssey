@@ -20,16 +20,11 @@
 #include "../../Camera_Streaming/src/MainStreaming.h"
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
-// Private constants
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-/** Arbitrary code to signal to the client that the streaming server has started. */
-#define MAIN_STREAMING_SERVER_STARTED_CODE 0xFADACACA
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Private variables
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 static int Socket_Server, Socket_Client;
 static unsigned char Battery_Voltage_Percentage = 0;
+static char *String_Server_IP;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Private functions
@@ -61,7 +56,7 @@ static void *ThreadReadBatteryVoltage(void *Pointer_Parameters)
 /** Run streaming server. */
 static void *ThreadVideoStreaming(void *Pointer_Parameters)
 {
-	while (1) mainStreaming();
+	while (1) mainStreaming(String_Server_IP);
 
 	// Only to make gcc happy
 	return NULL;
@@ -101,7 +96,7 @@ static void SignalHandlerPipe(int Signal_Number)
 int main(int argc, char *argv[])
 {
 	pthread_t Thread_ID;
-	char *String_Server_IP, *String_File_Path_Keys, *String_File_Path_Counter;
+	char *String_File_Path_Keys, *String_File_Path_Counter;
 	unsigned short Server_Port;
 	TRobotCommand Command;
 	struct sigaction Signal_Action;
@@ -225,15 +220,7 @@ int main(int argc, char *argv[])
 
 		// Enable streaming server
 		streamingReady = 1;
-		//
 		
-	/*	if (!SecurityServerSendRobotData(Socket_Client, MAIN_STREAMING_SERVER_STARTED_CODE))
-		{
-			Log(LOG_ERR, "Error : can't send streaming server starting code.");
-			close(Socket_Client);
-			continue;
-		}*/
-
 		Log(LOG_INFO, "Client connected.");
 
 		while (1)

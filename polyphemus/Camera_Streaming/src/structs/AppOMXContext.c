@@ -34,6 +34,7 @@
 /** @brief  Global variable used by the signal handler and capture/encoding loop. */
 int WantToQuit = 0 ;
 
+static char* serverIp;
 
                                                            /** CONFIGURATION **/
 /** @brief  Configure the camera parameters. */
@@ -540,9 +541,9 @@ static void _AppOMXContext_Init(AppOMXContext* self) {
 
     // Initialize data
     #ifdef NETWORK_WIFI
-        self -> streamingServer = StreamingServer_Construct("192.168.100.1", 9587) ;
+        self -> streamingServer = StreamingServer_Construct(serverIp, 9587) ;
     #else
-        self -> streamingServer = StreamingServer_Construct("192.168.0.2", 9587) ;
+        self -> streamingServer = StreamingServer_Construct(serverIp, 9587) ;
     #endif
     self -> camera = CameraBufferHandler_Construct() ;
     self -> encoder = EncoderBufferHandler_Construct() ;
@@ -552,8 +553,9 @@ static void _AppOMXContext_Init(AppOMXContext* self) {
 
 
 /** @brief  Create a new AppOMXContext. */
-AppOMXContext AppOMXContext_Construct() {
+AppOMXContext AppOMXContext_Construct(char* ip) {
     AppOMXContext self ;
+    serverIp = ip ;
     _AppOMXContext_Init(&self) ;
     return self ;
 }

@@ -5,6 +5,6 @@ extern int streamingReady ;
 
 extern int WantToQuit ;
 
-int mainStreaming() ;
+int mainStreaming(char* ip) ;
 
 #endif
