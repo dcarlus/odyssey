@@ -10,12 +10,15 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include "MainStreaming.h"
 #include "OMXUtils.h"
 #include "CameraSetupUtils.h"
 #include "CameraConfigurationUtils.h"
 #include "PortsConfigurationUtils.h"
 #include "structs/StreamingServer.h"
 #include "structs/AppOMXContext.h"
+
+int streamingReady = 0 ;
 
 /**
  * @brief   Initialization of OpenMAX and structures.
@@ -125,7 +128,9 @@ int mainStreaming() {
     portsReady(&ctx) ;
 
     // Capture and make video streaming over Wifi connection
-    ctx.capture(&ctx) ;
-
+    while (1) {
+        while (!streamingReady) ;
+        ctx.capture(&ctx) ;
+    }
     return 0 ;
 }

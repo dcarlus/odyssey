@@ -8,8 +8,11 @@
 #include "handlers/encoder/EncoderBufferHandler.h"
 #include "handlers/null_sink/NullSinkHandler.h"
 #include "../CameraConfigurationUtils.h"
+#include "../MainStreaming.h"
 #include "../Network.h"
 #include "../OMXUtils.h"
+#include "../PortsConfigurationUtils.h"
+#include <arpa/inet.h>
 #include <assert.h>
 
 // Client feedback (requests)
@@ -112,16 +115,6 @@ static void AppOMXContext_SetUnflushed(AppOMXContext* self) {
 
 
                                                                /** UTILITIES **/
-/**
- * @brief   Global signal handler for trapping SIGINT, SIGTERM, and SIGQUIT.
- * @author  Tuomas Jormola
- * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
- */
-static void _AppOMXContext_SignalHandler(int signal) {
-    WantToQuit = 1 ;
-}
-
-
 static void _AppOMXContext_StopCapturing(AppOMXContext* self) {
     OMX_HANDLETYPE* camera = self -> getCamera(self) ;
     OMX_HANDLETYPE* encoder = self -> getEncoder(self) ;
@@ -279,7 +272,7 @@ static void _AppOMXContext_SetComponentsAsLoaded(AppOMXContext* self) {
  * @param   dataLength  Length of the data.
  * @param   offset      Offset in the buffer where to start writing the data.
  */
-static void _AppOMXContext_SendPicture(AppOMXContext* self,
+static int _AppOMXContext_SendPicture(AppOMXContext* self,
                                        char* bufferData,
                                        int8_t* dataContent,
                                        uint32_t dataLength,
@@ -307,15 +300,18 @@ static void _AppOMXContext_SendPicture(AppOMXContext* self,
                                      bufferData,
                                      bufferSize) ;
 
-        if (output_written != bufferSize) {
+        if ((!streamingReady) || (output_written != bufferSize)) {
             printf("Failed to write to output file: %s\n", strerror(errno)) ;
-            die("Application will stop now\n") ;
+            streamingReady = 0 ;
+            self -> clientSocket = -2 ;
+            return 0 ;
         }
 
         log_printer("Read from output buffer and write to output file %d/%d",
                     encoderBuffer -> nFilledLen,
                     encoderBuffer -> nAllocLen) ;
     }
+    return 1 ;
 }
 
 
@@ -328,60 +324,63 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
     OMX_HANDLETYPE* camera = self -> getCamera(self) ;
     OMX_HANDLETYPE* encoder = self -> getEncoder(self) ;
     OMX_HANDLETYPE* nullSink = self -> getNullSink(self) ;
-    BufferOMXHandler* encoderHandler = self -> getEncoderHandler(self) ; ;
+    BufferOMXHandler* encoderHandler = self -> getEncoderHandler(self) ;
+    static OMX_PARAM_PORTDEFINITIONTYPE encoder_portdef ;
+    static OMX_BUFFERHEADERTYPE* encoderBuffer = NULL ;
+    static OMX_CONFIG_PORTBOOLEANTYPE capture ;
 /*    OMX_BUFFERHEADERTYPE* encoderBuffer = encoderHandler -> getBufferHeader(encoderHandler) ;*/
     BasicOMXHandler* encoderBasicHandler = encoderHandler -> getBasicHandler(encoderHandler) ;
-
+    static int isInitialized = 0 ;
 
 
 // Do not work if this code is placed in the
 // PortsConfigurationUtils::allocateBuffers() function...
 //..............................................................................
-    OMX_PARAM_PORTDEFINITIONTYPE encoder_portdef ;
-    OMX_INIT_STRUCTURE(encoder_portdef) ;
-    OMX_BUFFERHEADERTYPE* encoderBuffer = NULL ;
-    encoder_portdef.nPortIndex = PORT_ENCODER_OUTPUT ;
-    testError(OMX_GetParameter(*encoder, OMX_IndexParamPortDefinition, &encoder_portdef),
-              "Failed to get port definition for encoder output port 201") ;
-    testError(OMX_AllocateBuffer(*encoder,
-                                 &encoderBuffer,
-                                 PORT_ENCODER_OUTPUT,
-                                 NULL,
-                                 encoder_portdef.nBufferSize),
-              "Failed to allocate buffer for encoder output port 201") ;
+    if (!isInitialized) {
+        OMX_INIT_STRUCTURE(encoder_portdef) ;
+        encoder_portdef.nPortIndex = PORT_ENCODER_OUTPUT ;
+        testError(OMX_GetParameter(*encoder, OMX_IndexParamPortDefinition, &encoder_portdef),
+                "Failed to get port definition for encoder output port 201") ;
+        testError(OMX_AllocateBuffer(*encoder,
+                                    &encoderBuffer,
+                                    PORT_ENCODER_OUTPUT,
+                                    NULL,
+                                    encoder_portdef.nBufferSize),
+                "Failed to allocate buffer for encoder output port 201") ;
 
-    log_printer("Switching state of the encoder component to executing...") ;
-    testError(OMX_SendCommand(*encoder, OMX_CommandStateSet, OMX_StateExecuting, NULL),
-              "Failed to switch state of the encoder component to executing") ;
-    block_until_state_changed(encoder, OMX_StateExecuting) ;
-//..............................................................................
-
+        log_printer("Switching state of the encoder component to executing...") ;
+        testError(OMX_SendCommand(*encoder, OMX_CommandStateSet, OMX_StateExecuting, NULL),
+                "Failed to switch state of the encoder component to executing") ;
+        block_until_state_changed(encoder, OMX_StateExecuting) ;
+    //..............................................................................
 
 
-    log_printer("Switching on capture on camera video output port 71...") ;
 
-    OMX_CONFIG_PORTBOOLEANTYPE capture ;
-    OMX_INIT_STRUCTURE(capture) ;
-    capture.nPortIndex = PORT_CAMERA_VIDEO ;
-    capture.bEnabled = OMX_TRUE ;
-    testError(OMX_SetParameter(*camera, OMX_IndexConfigPortCapturing, &capture),
-              "Failed to switch on capture on camera video output port 71") ;
+        log_printer("Switching on capture on camera video output port 71...") ;
 
-    log_printer("Configured port definition for camera input port 73") ;
-    dump_port(camera, PORT_CAMERA_INPUT, OMX_FALSE) ;
-    log_printer("Configured port definition for camera preview output port 70") ;
-    dump_port(camera, PORT_CAMERA_PREVIEW, OMX_FALSE) ;
-    log_printer("Configured port definition for camera video output port 71") ;
-    dump_port(camera, PORT_CAMERA_VIDEO, OMX_FALSE) ;
-    log_printer("Configured port definition for encoder input port 200") ;
-    dump_port(encoder, PORT_ENCODER_INPUT, OMX_FALSE) ;
-    log_printer("Configured port definition for encoder output port 201") ;
-    dump_port(encoder, PORT_ENCODER_OUTPUT, OMX_FALSE) ;
-    log_printer("Configured port definition for null sink input port 240") ;
-    dump_port(nullSink, PORT_NULLSINK_INPUT, OMX_FALSE) ;
+        OMX_INIT_STRUCTURE(capture) ;
+        capture.nPortIndex = PORT_CAMERA_VIDEO ;
+        capture.bEnabled = OMX_TRUE ;
+        testError(OMX_SetParameter(*camera, OMX_IndexConfigPortCapturing, &capture),
+                "Failed to switch on capture on camera video output port 71") ;
 
+        log_printer("Configured port definition for camera input port 73") ;
+        dump_port(camera, PORT_CAMERA_INPUT, OMX_FALSE) ;
+        log_printer("Configured port definition for camera preview output port 70") ;
+        dump_port(camera, PORT_CAMERA_PREVIEW, OMX_FALSE) ;
+        log_printer("Configured port definition for camera video output port 71") ;
+        dump_port(camera, PORT_CAMERA_VIDEO, OMX_FALSE) ;
+        log_printer("Configured port definition for encoder input port 200") ;
+        dump_port(encoder, PORT_ENCODER_INPUT, OMX_FALSE) ;
+        log_printer("Configured port definition for encoder output port 201") ;
+        dump_port(encoder, PORT_ENCODER_OUTPUT, OMX_FALSE) ;
+        log_printer("Configured port definition for null sink input port 240") ;
+        dump_port(nullSink, PORT_NULLSINK_INPUT, OMX_FALSE) ;
+        
+        isInitialized = 1 ;
+    }
 
-    printf("Start capture...\n") ;
+    log_printer("Start capture...") ;
 
     int quit_detected = 0 ;                                                     // Detect when the user want to quit
     int quit_in_keyframe = 0 ;                                                  // Detect if a frame is synchronized before quitting
@@ -417,7 +416,7 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
         while (1) {
             if (encoderBasicHandler -> isReady(encoderBasicHandler)) {
                 if (WantToQuit && !quit_detected) {
-                    log_printer("Exit signal detected, waiting for next key frame boundry before exiting...") ;
+                    log_printer("Exit signal detected, waiting for next key frame boundary before exiting...") ;
                     quit_detected = 1 ;
                     quit_in_keyframe = (encoderBuffer -> nFlags) & OMX_BUFFERFLAG_SYNCFRAME ;
                 }
@@ -429,7 +428,7 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
 
 
                 // Data get from the encoder (header, data, ...)
-                int8_t* dataContent = (encoderBuffer -> pBuffer) + (encoderBuffer -> nOffset) ;
+                int8_t* dataContent = (int8_t*) (encoderBuffer -> pBuffer) + (encoderBuffer -> nOffset) ;
                 // Size of the returned data by the encoder
                 uint32_t dataLength = encoderBuffer -> nFilledLen ;
 
@@ -439,6 +438,9 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
                 if (((stateSending == STATE_MESSAGE_18) && (dataLength != H264_HEADER_SIZE_PART1))
                         || ((stateSending == STATE_MESSAGE_9) && (dataLength != H264_HEADER_SIZE_PART2)))
                     stateSending = STATE_MESSAGE_FRAME_WITHOUT_HEADER ;
+		else if (dataLength == H264_HEADER_SIZE_PART1) {
+                    stateSending = STATE_MESSAGE_18 ;
+		}
 
                 // Switch between the states of the state machine.
                 // It always follows the same order (18-byte data, 9-byte data,
@@ -459,21 +461,24 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
                         break ;
 
                     case STATE_MESSAGE_FRAME_WITH_HEADER:
-                        _AppOMXContext_SendPicture(self, bufferData, dataContent, dataLength, H264_HEADER_SIZE, encoderBuffer) ;
+                        if (!_AppOMXContext_SendPicture(self, bufferData, dataContent, dataLength, H264_HEADER_SIZE, encoderBuffer))
+                            return ;
                         stateSending = STATE_MESSAGE_FRAME_WITHOUT_HEADER ;
                         interframesCounter = 0 ;
                         break ;
 
                     case STATE_MESSAGE_FRAME_WITHOUT_HEADER:
                         interframesCounter++ ;
-                        _AppOMXContext_SendPicture(self, bufferData, dataContent, dataLength, 0, encoderBuffer) ;
-
+                        if (!_AppOMXContext_SendPicture(self, bufferData, dataContent, dataLength, 0, encoderBuffer))
+                            return ;
+                         
                         if (interframesCounter >= maxInterframes)
                             stateSending = STATE_MESSAGE_18 ;
                         break ;
                 }
 
-                need_next_buffer_to_be_filled = 1 ;
+                if (!WantToQuit)
+                    need_next_buffer_to_be_filled = 1 ;
             }
 
             // Buffer flushed, request a new buffer to be filled by the encoder component
@@ -492,11 +497,11 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
         log_printer("Stop video streaming...") ;
     }
 
-/*    _AppOMXContext_StopCapturing(self) ;*/
-/*    _AppOMXContext_FlushBuffers(self) ;*/
-/*    _AppOMXContext_DisablePorts(self) ;*/
-/*    _AppOMXContext_FreeBuffers(self) ;*/
-/*    _AppOMXContext_SetComponentsAsLoaded(self) ;*/
+    _AppOMXContext_StopCapturing(self) ;
+    _AppOMXContext_FlushBuffers(self) ;
+    _AppOMXContext_DisablePorts(self) ;
+    _AppOMXContext_FreeBuffers(self) ;
+    _AppOMXContext_SetComponentsAsLoaded(self) ;
 
     // Close the output file
     log_printer("Server shutdowns\n") ;

@@ -33,7 +33,7 @@ MakeForJupiter: $(OBJECTS)
 	$(CC) $(CCFLAGS) $(OBJECTS_PATH)/*.o -o Network_Control $(LIBRARIES)
 
 MakeForPolyphemus: $(OBJECTS)
-	@cd $(CAMERA_STREAMING_PATH)/src && $(MAKE) WIFI=1 NDEBUG=1 && cd $(NETWORK_CONTROL_PATH)
+	@cd $(CAMERA_STREAMING_PATH)/src && $(MAKE) WIFI=1 && cd $(NETWORK_CONTROL_PATH)
 	@cp $(CAMERA_STREAMING_PATH)/build/obj/*.o $(OBJECTS_PATH)
 	@#$(CC) $(CCFLAGS) $(OBJECTS) -o Network_Control $(LIBRARIES)
 	$(CC) $(CCFLAGS) $(OBJECTS_PATH)/*.o -o Network_Control $(LIBRARIES)

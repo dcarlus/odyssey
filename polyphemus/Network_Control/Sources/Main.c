@@ -17,11 +17,13 @@
 #include "Security_Server.h"
 #include "Log.h"
 #include "Crypto/Utils.h"
+#include "../../Camera_Streaming/src/MainStreaming.h"
 
-/** The streaming video server entry point. */
-extern void mainStreaming(void);
-/** Control the state of the streaming server. */
-extern int WantToQuit;
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Private constants
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+/** Arbitrary code to signal to the client that the streaming server has started. */
+#define MAIN_STREAMING_SERVER_STARTED_CODE 0xFADACACA
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Private variables
@@ -59,15 +61,7 @@ static void *ThreadReadBatteryVoltage(void *Pointer_Parameters)
 /** Run streaming server. */
 static void *ThreadVideoStreaming(void *Pointer_Parameters)
 {
-	while (1)
-	{
-		mainStreaming();
-
-		// Stop control server
-		close(Socket_Client);
-
-		Log(LOG_DEBUG, "Client disconnected from streaming server, closing all ports.");
-	}
+	while (1) mainStreaming();
 
 	// Only to make gcc happy
 	return NULL;
@@ -79,7 +73,7 @@ static void *ThreadVideoStreaming(void *Pointer_Parameters)
 static void SignalHandlerTerm(int Signal_Number)
 {
 	// Stop streaming server
-	WantToQuit = 1;
+	WantToQuit = 0;
 
 	SecurityServerQuit();
 	close(Socket_Client);
@@ -94,7 +88,7 @@ static void SignalHandlerTerm(int Signal_Number)
 static void SignalHandlerPipe(int Signal_Number)
 {
 	// Stop streaming server
-	WantToQuit = 1;
+	streamingReady = 0;
 	// Stop control server
 	close(Socket_Client);
 
@@ -228,6 +222,18 @@ int main(int argc, char *argv[])
 			close(Socket_Client);
 			continue;
 		}
+
+		// Enable streaming server
+		streamingReady = 1;
+		//
+		
+	/*	if (!SecurityServerSendRobotData(Socket_Client, MAIN_STREAMING_SERVER_STARTED_CODE))
+		{
+			Log(LOG_ERR, "Error : can't send streaming server starting code.");
+			close(Socket_Client);
+			continue;
+		}*/
+
 		Log(LOG_INFO, "Client connected.");
 
 		while (1)

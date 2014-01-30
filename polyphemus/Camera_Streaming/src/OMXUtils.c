@@ -6,7 +6,7 @@
 #include "OMXUtils.h"
 
 void log_printer(const char* message, ...) {
-    #ifdef DEBUG_POLYPHEMUS
+   /* #ifdef DEBUG_POLYPHEMUS
     va_list args ;
     char str[1024] ;
     memset(str, 0, sizeof(str)) ;
@@ -18,7 +18,7 @@ void log_printer(const char* message, ...) {
     if (str[str_len - 1] != '\n')
         str[str_len] = '\n' ;
     fprintf(stderr, str) ;
-    #endif
+    #endif*/
 }
 
 
