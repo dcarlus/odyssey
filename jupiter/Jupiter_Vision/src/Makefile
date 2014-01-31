@@ -27,7 +27,7 @@ BINARY_DIR  = $(BUILD_DIR)/bin
 LIBS_DIR    = $(ROOT_DIR)/lib
 # Header files to include
 INCLUDE_DIR = $(ROOT_DIR)/include
-INCLUDES    = -I$(INCLUDE_DIR) -I$(NETWORK_CONTROL_DIR)/Sources/
+INCLUDES    = -I$(INCLUDE_DIR) -I$(NETWORK_CONTROL_DIR)/Sources/ -I$(NETWORK_CONTROL_DIR)/Sources/Crypto
 # Libraries to link
 CV_LIBS     = -lopencv_core -lopencv_imgproc -lopencv_highgui
 FFMPEG_LIBS = -lavcodec -lavutil -lswscale
@@ -65,7 +65,6 @@ infoCompilation:
 MakeOBJ: $(OBJ)
 	@cd $(NETWORK_CONTROL_DIR) && $(MAKE) JUPITER_COMPILING=1
 	@cp $(NETWORK_CONTROL_DIR)/Objects/*.o $(OBJ_DIR)
-	@rm $(OBJ_DIR)/Main.o
 	@cd clients && $(MAKE)
 	@cd ../
 	@cd gui && $(MAKE)

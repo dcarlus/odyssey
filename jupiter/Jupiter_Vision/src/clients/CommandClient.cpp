@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <pthread.h>
 #include <sys/select.h>
+#include <unistd.h>
 #include <iostream>
 
 using namespace std ;
@@ -19,6 +20,7 @@ CommandClient* CommandClient::Instance = 0 ;
             cout << "Connected to Mercury" << endl ;
 
             m_isLEDOn = false ;
+            sleep(5) ;
         }
 
 CommandClient::~CommandClient() throw() {
@@ -66,5 +68,6 @@ char CommandClient::getBatteryLoadRate() {
     int loadRate ;
     SecurityClientSendRobotCommand(m_socket.getSocket(), ROBOT_COMMAND_READ_BATTERY_VOLTAGE) ;
     SecurityClientReceiveRobotData(m_socket.getSocket(), &loadRate) ;
+    cout << dec << "Battery: " << loadRate << "%" << endl ;
     return (char) loadRate ;
 }

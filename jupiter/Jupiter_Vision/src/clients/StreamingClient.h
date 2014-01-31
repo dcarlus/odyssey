@@ -1,6 +1,12 @@
 #ifndef __JUPITER__STREAMING_CLIENT__
 #define __JUPITER__STREAMING_CLIENT__
 
+extern "C" {
+    #include <Log.h>
+    #include <Security_Client.h>
+    #include <Robot.h>
+}
+
 #include <easysocket/comm.h>
 #include <easysocket/tools.h>
 #include "../picture/H264Decoder.h"

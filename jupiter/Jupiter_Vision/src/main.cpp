@@ -48,7 +48,8 @@ int main(int argc, char** argv) {
     if (successSecurity == 0) {
         srand(time(0)) ;
 
-//        CommandClient::getInstance() ;
+        CommandClient::getInstance() ;
+
         Allegro::getInstance() ;
         StreamingClient* sc = StreamingClient::getInstance() ;
         sc -> start() ;
