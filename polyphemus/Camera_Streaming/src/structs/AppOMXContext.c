@@ -280,33 +280,53 @@ static int _AppOMXContext_SendPicture(AppOMXContext* self,
                                        uint32_t offset,
                                        OMX_BUFFERHEADERTYPE* encoderBuffer) {
     if (dataLength > 256) {
+#if 1
         // Length of the frame data: H264 header + picture
         // data (written in Big Endian to send on network)
         uint32_t fullLength = htonl(offset + dataLength) ;
         // Total size of the sent data for write()
-        uint32_t bufferSize = sizeof(uint32_t) + offset + dataLength ;
+        uint32_t bufferSize = /*sizeof(uint32_t) +*/ offset + dataLength ;
 
         // Copy the size of the frame data at offset 0
-        memcpy(bufferData, &fullLength, sizeof(uint32_t)) ;
+        /*memcpy(bufferData, &fullLength, sizeof(uint32_t)) ;*/
         // Copy the compressed frame data at (offset + 4 bytes)
-        memcpy(bufferData + sizeof(uint32_t) + offset, dataContent, dataLength) ;
+        memcpy(bufferData /*+ sizeof(uint32_t)*/ + offset, dataContent, dataLength) ;
 
 
         // @TODO Send data through secured socket*/
         // Send the full buffer to the client (Jupiter, IO)
         StreamingServer* ss = &(self -> streamingServer) ;
         size_t output_written ;
-        output_written = ss -> write(ss,
-                                     self -> clientSocket,
-                                     bufferData,
-                                     bufferSize) ;
+        char success = SecurityServerSendVideoBuffer(self -> clientSocket,
+                                                     bufferData,
+                                                     bufferSize) ;
+/*        output_written = ss -> write(ss,*/
+/*                                     self -> clientSocket,*/
+/*                                     bufferData,*/
+/*                                     bufferSize) ;*/
+#else
+		// TEST
+		static int size = 10, data = 1;
+		memset(bufferData, data, size);
+		size++;
+		data++;
+		char success = SecurityServerSendVideoBuffer(self -> clientSocket,
+                                                     bufferData,
+                                                     size) ;
+#endif
+				// TEST
+				static int stop = 0;
+				//if (stop == 9) while (1);
 
-        if ((!streamingReady) || (output_written != bufferSize)) {
+        if ((!streamingReady) || (!success)) {
             printf("Failed to write to output file: %s\n", strerror(errno)) ;
             streamingReady = 0 ;
             self -> clientSocket = -2 ;
             return 0 ;
         }
+        
+				// TEST
+				stop++;
 
         log_printer("Read from output buffer and write to output file %d/%d",
                     encoderBuffer -> nFilledLen,
@@ -449,14 +469,14 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
                 switch (stateSending) {
                     case STATE_MESSAGE_18:
                         // Copy data to the buffer at offset 4
-                        memcpy(bufferData + sizeof(uint32_t), dataContent, dataLength) ;
+                        memcpy(bufferData /*+ sizeof(uint32_t)*/, dataContent, dataLength) ;
                         // Set the next state
                         stateSending = STATE_MESSAGE_9 ;
                         break ;
 
                     case STATE_MESSAGE_9:
                         // Copy data to the buffer at offset 4 + 18 = 22
-                        memcpy(bufferData + sizeof(uint32_t) + H264_HEADER_SIZE_PART1, dataContent, dataLength) ;
+                        memcpy(bufferData /*+ sizeof(uint32_t)*/ + H264_HEADER_SIZE_PART1, dataContent, dataLength) ;
                         // Set the next state
                         stateSending = STATE_MESSAGE_FRAME_WITH_HEADER ;
                         break ;

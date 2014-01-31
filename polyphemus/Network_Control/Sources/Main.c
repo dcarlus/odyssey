@@ -156,14 +156,12 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	#ifdef ENABLE_STREAMING
-		if (pthread_create(&Thread_ID, NULL, ThreadVideoStreaming, NULL) != 0)
-		{
-			Log(LOG_ERR, "Error : can't create video streaming thread.");
-			return -1;
-		}
-		Log(LOG_DEBUG, "Streaming is enabled.");
-	#endif
+	if (pthread_create(&Thread_ID, NULL, ThreadVideoStreaming, NULL) != 0)
+	{
+		Log(LOG_ERR, "Error : can't create video streaming thread.");
+		return -1;
+	}
+	Log(LOG_DEBUG, "Streaming is enabled.");
 
 	// Create server
 	Socket_Server = NetworkServerCreate(String_Server_IP, Server_Port);

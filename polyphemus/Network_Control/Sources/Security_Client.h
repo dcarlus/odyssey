@@ -44,12 +44,12 @@ int SecurityClientReceiveRobotData(int Socket_Server, int *Pointer_Data);
 
 /** Receive video streaming data from the server.
  * @param Socket_Server The video stream source.
- * @param Pointer_Received_Buffer On output, contain the received data. Be sure that the buffer has enough room to contain the data.
- * @param Pointer_Received_Buffer_Size On output, contain the size of the received buffer. Due to AES encryption, the received buffer is padded on a 16-byte boundary.
+ * @param Pointer_Received_Video_Buffer On output, contain the received video data. Be sure that the buffer has enough room to contain the data.
+ * @param Pointer_Received_Video_Buffer_Size On output, contain the size in bytes of the video payload buffer.
  * @return 1 if the data was successfully received or 0 if the connection dropped.
  * @warning The maximum buffer size that can be received is defined by macro SECURITY_VIDEO_BUFFER_MAXIMUM_SIZE_BYTES.
  */
-int SecurityClientReceiveVideoBuffer(int Socket_Server, void *Pointer_Received_Buffer, int *Pointer_Received_Buffer_Size);
+int SecurityClientReceiveVideoBuffer(int Socket_Server, void *Pointer_Received_Video_Buffer, int *Pointer_Received_Video_Buffer_Size);
 
 /** Free allocated resources. */
 void SecurityClientQuit(void);

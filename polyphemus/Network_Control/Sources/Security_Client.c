@@ -180,9 +180,16 @@ int SecurityClientReceiveRobotData(int Socket_Server, int *Pointer_Data)
 	return SecurityReceiveRobotControlMessage(Socket_Server, Pointer_AES_Context_Input_Data, Pointer_Data);
 }
 
-int SecurityClientReceiveVideoBuffer(int Socket_Server, void *Pointer_Received_Buffer, int *Pointer_Received_Buffer_Size)
+/*int SecurityClientReceiveVideoBuffer(int Socket_Server, void *Pointer_Received_Video_Buffer, int *Pointer_Received_Video_Buffer_Size)
 {
-	int Received_Buffer_Size;
+	int Received_Buffer_Size, Decrypted_Bytes_Count, Bytes_Count;
+	union
+	{
+		unsigned char Bytes[AES_BLOCK_SIZE_BYTES];
+		int Video_Buffer_Size;
+	} First_AES_Block;
+	
+			int caca;
 
 	// Receive encrypted buffer
 	Received_Buffer_Size = read(Socket_Server, Encrypted_Video_Buffer, sizeof(Encrypted_Video_Buffer));
@@ -191,21 +198,177 @@ int SecurityClientReceiveVideoBuffer(int Socket_Server, void *Pointer_Received_B
 		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not receive data from socket (received buffer size is %d bytes).", Received_Buffer_Size);
 		return 0;
 	}
+		printf("Received_Buffer_Size = %d\n", Received_Buffer_Size);
 
-	// Decipher buffer
-	if (EVP_DecryptUpdate(Pointer_AES_Context_Input_Video, Pointer_Received_Buffer, Pointer_Received_Buffer_Size, Encrypted_Video_Buffer, Received_Buffer_Size) == 0)
+	// Decipher video buffer size
+	if (EVP_DecryptUpdate(Pointer_AES_Context_Input_Video, First_AES_Block.Bytes, &Decrypted_Bytes_Count, Encrypted_Video_Buffer, AES_BLOCK_SIZE_BYTES) == 0)
 	{
-		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not decipher AES buffer.");
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not decipher first buffer block.");
+		return 0;
+	}		printf("Decrypted_Bytes_Count 1e bloc = %d\n",Decrypted_Bytes_Count); caca=Decrypted_Bytes_Count;
+	// Check decrypted size
+	if (Decrypted_Bytes_Count != AES_BLOCK_SIZE_BYTES)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : bad first block deciphering size (%d bytes).", Decrypted_Bytes_Count);
 		return 0;
 	}
+	*Pointer_Received_Video_Buffer_Size = ntohl(First_AES_Block.Video_Buffer_Size);
 
+	// Copy first video bytes deciphered in the same time than the buffer length
+	Bytes_Count = AES_BLOCK_SIZE_BYTES - sizeof(First_AES_Block.Video_Buffer_Size);
+	memcpy(Pointer_Received_Video_Buffer, First_AES_Block.Bytes + sizeof(First_AES_Block.Video_Buffer_Size), Bytes_Count);
+	Pointer_Received_Video_Buffer += Bytes_Count;
+
+	// Decipher remaining video buffer
+	Bytes_Count = Received_Buffer_Size - AES_BLOCK_SIZE_BYTES; printf("nombres octets restants = %d\n", Bytes_Count);
+	if (EVP_DecryptUpdate(Pointer_AES_Context_Input_Video, Pointer_Received_Video_Buffer, &Decrypted_Bytes_Count, &Encrypted_Video_Buffer[AES_BLOCK_SIZE_BYTES], Bytes_Count) == 0)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not decipher AES video buffer.");
+		return 0;
+	}   printf("Decrypted_Bytes_Count autres blocs = %d\n",Decrypted_Bytes_Count); caca+=Decrypted_Bytes_Count; 
 	// Check plaintext buffer size
-	if (*Pointer_Received_Buffer_Size != Received_Buffer_Size)
+	if (Decrypted_Bytes_Count != Bytes_Count)
 	{
-		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : bad deciphered buffer size (%d bytes).", *Pointer_Received_Buffer_Size);
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : bad deciphered video buffer size (%d bytes).", Decrypted_Bytes_Count);
+		return 0;
+	} printf("total len ta mèr : %d\n", caca);
+
+	return 1;
+}*/
+
+/*int SecurityClientReceiveVideoBuffer(int Socket_Server, void *Pointer_Received_Video_Buffer, int *Pointer_Received_Video_Buffer_Size)
+{
+	int Received_Buffer_Size, Decrypted_Bytes_Count, Bytes_Count, Real_Video_Buffer_Size, Padded_Video_Buffer_Size, Remaining_Unpadded_Bytes;
+	union
+	{
+		unsigned char Bytes[AES_BLOCK_SIZE_BYTES];
+		int Video_Buffer_Size;
+	} First_AES_Block;
+	
+			int caca;
+			
+	// Receive encrypted first AES block
+	Received_Buffer_Size = read(Socket_Server, Encrypted_Video_Buffer, AES_BLOCK_SIZE_BYTES);
+	if (Received_Buffer_Size != AES_BLOCK_SIZE_BYTES)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not receive first AES block from socket (received buffer size is %d bytes).", Received_Buffer_Size);
 		return 0;
 	}
 
+	// Decipher video buffer size
+	if (EVP_DecryptUpdate(Pointer_AES_Context_Input_Video, First_AES_Block.Bytes, &Decrypted_Bytes_Count, Encrypted_Video_Buffer, AES_BLOCK_SIZE_BYTES) == 0)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not decipher first AES block.");
+		return 0;
+	}		printf("Decrypted_Bytes_Count 1e bloc = %d\n",Decrypted_Bytes_Count); caca=Decrypted_Bytes_Count;
+	// Check decrypted size
+	if (Decrypted_Bytes_Count != AES_BLOCK_SIZE_BYTES)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : bad first AES block deciphering size (%d bytes).", Decrypted_Bytes_Count);
+		return 0;
+	}
+	Real_Video_Buffer_Size = ntohl(First_AES_Block.Video_Buffer_Size);
+	*Pointer_Received_Video_Buffer_Size = Real_Video_Buffer_Size;
+			printf("Real_Video_Buffer_Size = %d\n", Real_Video_Buffer_Size);
+
+	// Copy first video data bytes deciphered in the same time than the video buffer length
+	Bytes_Count = AES_BLOCK_SIZE_BYTES - sizeof(First_AES_Block.Video_Buffer_Size);
+	memcpy(Pointer_Received_Video_Buffer, First_AES_Block.Bytes + sizeof(First_AES_Block.Video_Buffer_Size), Bytes_Count);
+	Pointer_Received_Video_Buffer += Bytes_Count;
+	
+	// Compute padded size of the video buffer (thanks to Denis Carlus)
+	Remaining_Unpadded_Bytes = Real_Video_Buffer_Size % AES_BLOCK_SIZE_BYTES;
+	if (Remaining_Unpadded_Bytes == 0) {Padded_Video_Buffer_Size = Real_Video_Buffer_Size; printf("NO padding\n"); }
+	else {Padded_Video_Buffer_Size = Real_Video_Buffer_Size + (AES_BLOCK_SIZE_BYTES - Remaining_Unpadded_Bytes); printf("PADDING\n");}
+	Padded_Video_Buffer_Size -= AES_BLOCK_SIZE_BYTES; // A whole block has already been read
+			printf("Padded_Video_Buffer_Size = %d\n", Padded_Video_Buffer_Size);
+
+	// Receive encrypted buffer
+	Received_Buffer_Size = read(Socket_Server, Encrypted_Video_Buffer, Padded_Video_Buffer_Size);
+	if (Received_Buffer_Size != Padded_Video_Buffer_Size)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not receive video data from socket (received %d/%d bytes).", Received_Buffer_Size, Padded_Video_Buffer_Size);
+		return 0;
+	}
+			printf("Received_Video_Buffer_Size = %d\n", Received_Buffer_Size);
+	// Decipher remaining video buffer
+	//Bytes_Count = Received_Buffer_Size - AES_BLOCK_SIZE_BYTES; //printf("nombres octets restants = %d\n", Bytes_Count);
+	if (EVP_DecryptUpdate(Pointer_AES_Context_Input_Video, Pointer_Received_Video_Buffer, &Decrypted_Bytes_Count, Encrypted_Video_Buffer, Padded_Video_Buffer_Size) == 0)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not decipher AES video buffer.");
+		return 0;
+	}  // printf("Decrypted_Bytes_Count autres blocs = %d\n",Decrypted_Bytes_Count); caca+=Decrypted_Bytes_Count; 
+	// Check plaintext buffer size
+	if (Decrypted_Bytes_Count != Padded_Video_Buffer_Size)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : bad deciphered video buffer size (%d bytes).", Decrypted_Bytes_Count);
+		return 0;
+	} //printf("total len ta mèr : %d\n", caca);
+
+	return 1;
+}*/
+
+int SecurityClientReceiveVideoBuffer(int Socket_Server, void *Pointer_Received_Video_Buffer, int *Pointer_Received_Video_Buffer_Size)
+{
+	TSecurityVideoMessageHeader Header;
+	unsigned int Temp_Int;
+	int Bytes_To_Receive_Count, Received_Buffer_Size, Decrypted_Bytes_Count;
+	
+	// Receive encrypted header
+	Received_Buffer_Size = read(Socket_Server, Encrypted_Video_Buffer, AES_BLOCK_SIZE_BYTES);
+	if (Received_Buffer_Size != AES_BLOCK_SIZE_BYTES)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not receive encrypted header from socket (received %d/%d bytes).", Received_Buffer_Size, AES_BLOCK_SIZE_BYTES);
+		return 0;
+	}
+	
+	// Decipher header
+	if (EVP_DecryptUpdate(Pointer_AES_Context_Input_Video, (unsigned char *) &Header, &Decrypted_Bytes_Count, Encrypted_Video_Buffer, AES_BLOCK_SIZE_BYTES) == 0)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not decipher header.");
+		return 0;
+	}
+	// Check decrypted size
+	if (Decrypted_Bytes_Count != AES_BLOCK_SIZE_BYTES)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : only %d/%d bytes of the header were deciphered.", Decrypted_Bytes_Count, AES_BLOCK_SIZE_BYTES);
+		return 0;
+	}
+	
+	// Convert header to local machine endianess
+	Temp_Int = ntohl(Header.Payload_Size);
+	Header.Payload_Size = Temp_Int;
+	Temp_Int = ntohl(Header.Padding_Size);
+	Header.Padding_Size = Temp_Int;
+	
+		printf("Payload_Size = %d\n", Header.Payload_Size);
+		printf("Padding_Size = %d\n", Header.Padding_Size);
+	
+	// Receive video buffer and padding
+	Bytes_To_Receive_Count = Header.Payload_Size + Header.Padding_Size;
+	Received_Buffer_Size = recv(Socket_Server, Encrypted_Video_Buffer, Bytes_To_Receive_Count, MSG_WAITALL);
+	if (Received_Buffer_Size != Bytes_To_Receive_Count)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not receive encrypted video data and padding from socket (received %d/%d bytes)", Received_Buffer_Size, Bytes_To_Receive_Count);
+		return 0;
+	}
+		printf("payload + padding reçus = %d\n", Received_Buffer_Size);
+	
+	// Decipher video data
+	if (EVP_DecryptUpdate(Pointer_AES_Context_Input_Video, Pointer_Received_Video_Buffer, &Decrypted_Bytes_Count, Encrypted_Video_Buffer, Bytes_To_Receive_Count) == 0)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not decipher video and padding.");
+		return 0;
+	}
+	// Check decrypted size
+	if (Decrypted_Bytes_Count != Bytes_To_Receive_Count)
+	{
+		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : only %d/%d bytes of the video and padding were deciphered.", Decrypted_Bytes_Count, Bytes_To_Receive_Count);
+		return 0;
+	}
+	
+			putchar('\n');
+	*Pointer_Received_Video_Buffer_Size = Header.Payload_Size;
 	return 1;
 }
 

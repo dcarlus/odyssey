@@ -167,7 +167,7 @@ int SecurityServerAuthenticateClient(int Socket_Client)
 	}
 
 	// Robot output video link
-	if (AESDecipherInit(Pointer_AES_Context_Output_Video, AES_Key, AES_Initialization_Vector) == -1)
+	if (AESCipherInit(Pointer_AES_Context_Output_Video, AES_Key, AES_Initialization_Vector) == -1)
 	{
 		Log(LOG_ERR, "[Security_Server.SecurityServerAuthenticateClient] Error : can't create AES output link for robot video.");
 		goto Exit;
@@ -196,11 +196,11 @@ int SecurityServerSendRobotData(int Socket_Client, int Data)
 	return SecuritySendRobotControlMessage(Socket_Client, Pointer_AES_Context_Output_Data, Data);
 }
 
-int SecurityServerSendVideoBuffer(int Socket_Client, void *Pointer_Buffer, int Buffer_Size)
+/*int SecurityServerSendVideoBuffer(int Socket_Client, void *Pointer_Buffer, int Buffer_Size)
 {
 	int Encrypted_Bytes_Count, Padded_Bytes_Count, Unpadded_Bytes_Count, Total_Encrypted_Bytes_Count;
 	unsigned char Padded_Buffer[AES_BLOCK_SIZE_BYTES] = {0};
-
+	
 	// Can't cipher nothing
 	if (Buffer_Size <= 0)
 	{
@@ -213,16 +213,24 @@ int SecurityServerSendVideoBuffer(int Socket_Client, void *Pointer_Buffer, int B
 	{
 		Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : buffer size is too big (%d bytes), maximum buffer size is %d bytes.", Buffer_Size, SECURITY_VIDEO_BUFFER_MAXIMUM_SIZE_BYTES - AES_BLOCK_SIZE_BYTES);
 		return 0;
-	}
+	} printf("Buffer_Size = %d\n", Buffer_Size);
 
 	// AES is used without padding, so last block padding is handled by hand
 	Padded_Bytes_Count = (Buffer_Size / AES_BLOCK_SIZE_BYTES) * AES_BLOCK_SIZE_BYTES; // How many bytes can be encrypted without padding them
 	Unpadded_Bytes_Count = Buffer_Size - Padded_Bytes_Count; // How many bytes need to be padded
 	
+		printf("Padded_Bytes_Count = %d, Unpadded_Bytes_Count = %d, Padded_Bytes_Count+Unpadded_Bytes_Count = %d\n", Padded_Bytes_Count, Unpadded_Bytes_Count, Padded_Bytes_Count + Unpadded_Bytes_Count);
+
 	// Cipher complete blocks data
 	if (EVP_EncryptUpdate(Pointer_AES_Context_Output_Video, Encrypted_Video_Buffer, &Total_Encrypted_Bytes_Count, Pointer_Buffer, Padded_Bytes_Count) == 0)
 	{
 		Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : could not cipher padded data.");
+		return 0;
+	}  printf("nbr octets paddés chiffrés = %d\n", Total_Encrypted_Bytes_Count);
+	// Check ciphered bytes count
+	if (Total_Encrypted_Bytes_Count != Padded_Bytes_Count)
+	{
+		Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : only %d/%d bytes of padded data were encrypted.", Total_Encrypted_Bytes_Count, Padded_Bytes_Count);
 		return 0;
 	}
 
@@ -238,9 +246,18 @@ int SecurityServerSendVideoBuffer(int Socket_Client, void *Pointer_Buffer, int B
 		{
 			Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : could not cipher unpadded data.");
 			return 0;
+		} printf("nbr octets non paddés chiffrés = %d\n", Encrypted_Bytes_Count);
+		// Check ciphered bytes count
+		if (Encrypted_Bytes_Count != AES_BLOCK_SIZE_BYTES)
+		{
+			Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : only %d/%d bytes of last block were encrypted.", Encrypted_Bytes_Count, AES_BLOCK_SIZE_BYTES);
+			return 0;
 		}
 		Total_Encrypted_Bytes_Count += Encrypted_Bytes_Count;
 	}
+	
+		// TEST
+		printf("total len : %d\n", Total_Encrypted_Bytes_Count);
 
 	// Send encrypted buffer
 	if (write(Socket_Client, Encrypted_Video_Buffer, Total_Encrypted_Bytes_Count) != Total_Encrypted_Bytes_Count)
@@ -248,6 +265,103 @@ int SecurityServerSendVideoBuffer(int Socket_Client, void *Pointer_Buffer, int B
 		Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : could not write to socket.");
 		return 0;
 	}
+
+	return 1;
+}*/
+
+int SecurityServerSendVideoBuffer(int Socket_Client, void *Pointer_Buffer, int Buffer_Size)
+{
+	TSecurityVideoMessageHeader Header;
+	int Encrypted_Bytes_Count, Padded_Bytes_Count, Unpadded_Bytes_Count, Total_Encrypted_Bytes_Count;
+	unsigned int Padding_Size;
+	unsigned char Padded_Buffer[AES_BLOCK_SIZE_BYTES] = {0};
+	
+	// Can't cipher nothing
+	if (Buffer_Size <= 0)
+	{
+		Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : buffer size is too small (%d bytes).", Buffer_Size);
+		return 0;
+	}
+
+	// Can't encrypt more data than maximum buffer size
+	if (Buffer_Size > SECURITY_VIDEO_BUFFER_MAXIMUM_SIZE_BYTES - sizeof(Header) - AES_BLOCK_SIZE_BYTES + 1)
+	{
+		Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : buffer size is too big (%d bytes), maximum buffer size is %d bytes.", Buffer_Size, SECURITY_VIDEO_BUFFER_MAXIMUM_SIZE_BYTES - AES_BLOCK_SIZE_BYTES);
+		return 0;
+	}
+	
+	// AES is used without padding, so last block padding is handled by hand
+	Padded_Bytes_Count = (Buffer_Size / AES_BLOCK_SIZE_BYTES) * AES_BLOCK_SIZE_BYTES; // How many bytes can be encrypted without padding them
+	Unpadded_Bytes_Count = Buffer_Size - Padded_Bytes_Count; // How many bytes need to be padded
+	
+	// Compute padding
+	if (Unpadded_Bytes_Count == 0) Padding_Size = 0; // No padding if the payload is a multiple of AES block size
+	else Padding_Size = AES_BLOCK_SIZE_BYTES - Unpadded_Bytes_Count;
+	
+		printf("Padded_Bytes_Count = %d\n", Padded_Bytes_Count);
+		printf("Padding_Size = %d\n", Padding_Size);
+		printf("Frame length = %d\n", Buffer_Size);
+	
+	// Fill message header
+	Header.Payload_Size = htonl(Buffer_Size);
+	Header.Padding_Size = htonl(Padding_Size);
+	
+	// Cipher message header
+	if (EVP_EncryptUpdate(Pointer_AES_Context_Output_Video, Encrypted_Video_Buffer, &Total_Encrypted_Bytes_Count, (unsigned char *) &Header, sizeof(Header)) == 0)
+	{
+		Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : could not cipher header.");
+		return 0;
+	}
+	// Check ciphered bytes count
+	if (Total_Encrypted_Bytes_Count != sizeof(Header))
+	{
+		Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : only %d/%d bytes of header were encrypted.", Total_Encrypted_Bytes_Count, sizeof(Header));
+		return 0;
+	}
+	
+	// Cipher complete blocks data
+	if (EVP_EncryptUpdate(Pointer_AES_Context_Output_Video, &Encrypted_Video_Buffer[sizeof(Header)], &Encrypted_Bytes_Count, Pointer_Buffer, Padded_Bytes_Count) == 0)
+	{
+		Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : could not cipher padded data.");
+		return 0;
+	}
+	// Check ciphered bytes count
+	if (Encrypted_Bytes_Count != Padded_Bytes_Count)
+	{
+		Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : only %d/%d bytes of padded data were encrypted.", Encrypted_Bytes_Count, Padded_Bytes_Count);
+		return 0;
+	}
+	Total_Encrypted_Bytes_Count += Encrypted_Bytes_Count;
+	
+	// Encrypt remaining bytes
+	if (Unpadded_Bytes_Count > 0)
+	{
+		// Generate padded buffer with remaining bytes
+		Pointer_Buffer += Padded_Bytes_Count;
+		memcpy(Padded_Buffer, Pointer_Buffer, Unpadded_Bytes_Count);
+
+		// Cipher padded buffer
+		if (EVP_EncryptUpdate(Pointer_AES_Context_Output_Video, &Encrypted_Video_Buffer[sizeof(Header) + Padded_Bytes_Count], &Encrypted_Bytes_Count, Padded_Buffer, AES_BLOCK_SIZE_BYTES) == 0)
+		{
+			Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : could not cipher unpadded data.");
+			return 0;
+		}
+		// Check ciphered bytes count
+		if (Encrypted_Bytes_Count != AES_BLOCK_SIZE_BYTES)
+		{
+			Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : only %d/%d bytes of last block were encrypted.", Encrypted_Bytes_Count, AES_BLOCK_SIZE_BYTES);
+			return 0;
+		}
+		Total_Encrypted_Bytes_Count += Encrypted_Bytes_Count;
+	}
+	
+	// Send encrypted buffer
+	if (write(Socket_Client, Encrypted_Video_Buffer, Total_Encrypted_Bytes_Count) != Total_Encrypted_Bytes_Count)
+	{
+		Log(LOG_ERR, "[Security_Server.SecurityServerSendVideoBuffer] Error : could not write to socket.");
+		return 0;
+	}
+			printf("Total_Encrypted_Bytes_Count = %d\n\n", Total_Encrypted_Bytes_Count);
 
 	return 1;
 }

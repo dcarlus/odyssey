@@ -10,7 +10,8 @@ CAMERA_STREAMING_PATH = ../Camera_Streaming
 NETWORK_CONTROL_PATH = `pwd`
 
 OBJECTS_CRYPTO = $(OBJECTS_PATH)/Elliptic_Curves.o $(OBJECTS_PATH)/Point.o $(OBJECTS_PATH)/Utils.o $(OBJECTS_PATH)/AES.o $(OBJECTS_PATH)/DSA.o
-OBJECTS = $(OBJECTS_CRYPTO) $(OBJECTS_PATH)/Main.o $(OBJECTS_PATH)/UART.o $(OBJECTS_PATH)/Robot.o $(OBJECTS_PATH)/Network.o $(OBJECTS_PATH)/Security.o $(OBJECTS_PATH)/Log.o $(OBJECTS_PATH)/Security_Server.o $(OBJECTS_PATH)/Security_Client.o
+JUPITER_OBJECTS = $(OBJECTS_CRYPTO) $(OBJECTS_PATH)/Security.o $(OBJECTS_PATH)/Log.o $(OBJECTS_PATH)/Security_Client.o
+POLYPHEMUS_OBJECTS = $(OBJECTS_CRYPTO) $(OBJECTS_PATH)/Main.o $(OBJECTS_PATH)/UART.o $(OBJECTS_PATH)/Robot.o $(OBJECTS_PATH)/Network.o $(OBJECTS_PATH)/Security.o $(OBJECTS_PATH)/Log.o $(OBJECTS_PATH)/Security_Server.o
 
 TARGET_ALL=
 INFO_PLATFORM=
@@ -29,20 +30,13 @@ all: InfoPlatform $(TARGET_ALL)
 InfoPlatform:
 	@echo $(INFO_PLATFORM)
 
-MakeForJupiter: $(OBJECTS)
-	$(CC) $(CCFLAGS) $(OBJECTS_PATH)/*.o -o Network_Control $(LIBRARIES)
+MakeForJupiter: $(JUPITER_OBJECTS)
+#	$(CC) $(CCFLAGS) $(OBJECTS_PATH)/*.o -o Network_Control $(LIBRARIES)
 
-MakeForPolyphemus: $(OBJECTS)
+MakeForPolyphemus: $(POLYPHEMUS_OBJECTS)
 	@cd $(CAMERA_STREAMING_PATH)/src && $(MAKE) WIFI=1 && cd $(NETWORK_CONTROL_PATH)
 	@cp $(CAMERA_STREAMING_PATH)/build/obj/*.o $(OBJECTS_PATH)
-	@#$(CC) $(CCFLAGS) $(OBJECTS) -o Network_Control $(LIBRARIES)
 	$(CC) $(CCFLAGS) $(OBJECTS_PATH)/*.o -o Network_Control $(LIBRARIES)
-
-#all: $(OBJECTS)
-#	@cd $(CAMERA_STREAMING_PATH)/src && $(MAKE) && cd $(NETWORK_CONTROL_PATH)
-#	@cp $(CAMERA_STREAMING_PATH)/build/obj/*.o $(OBJECTS_PATH)
-#	#$(CC) $(CCFLAGS) $(OBJECTS) -o Network_Control $(LIBRARIES)
-#	$(CC) $(CCFLAGS) $(OBJECTS_PATH)/*.o -o Network_Control $(LIBRARIES)
 
 $(OBJECTS_PATH)/Main.o: $(SOURCES_PATH)/Main.c $(SOURCES_PATH)/UART.h $(SOURCES_PATH)/Robot.h $(SOURCES_PATH)/Network.h $(SOURCES_PATH)/Log.h $(SOURCES_PATH)/Security_Server.h
 	$(CC) $(CCFLAGS) -c $(SOURCES_PATH)/Main.c -o $(OBJECTS_PATH)/Main.o

@@ -11,6 +11,7 @@
 #include <openssl/evp.h>
 #include "Crypto/Elliptic_Curves.h"
 #include "Crypto/Point.h"
+#include "Crypto/Utils.h"
 #include "Robot.h"
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -39,6 +40,14 @@ typedef struct __attribute__((packed))
 	char Hash[UTILS_HASH_SIZE_BYTES]; //! Hash of the message payload used to check integrity.
 	char Padding[12]; //! Padding needed to alignate message on AES blocks size.
 } TSecurityMessageRobotControl;
+
+/** Video message header. */
+typedef struct __attribute__((packed))
+{
+	unsigned int Payload_Size; //! Payload length in bytes.
+	unsigned int Padding_Size; //! Padding length in bytes.
+	char Reserved[8]; //! Reserved bytes used to reach a full AES block size.
+} TSecurityVideoMessageHeader;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Functions
