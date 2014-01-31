@@ -1,5 +1,5 @@
 CC = gcc
-CCFLAGS = -Wall -g
+CCFLAGS = -Wall -O1
 #-O3
 LIBRARIES = -pthread -lgmp -lssl -lcrypto
 
@@ -31,7 +31,6 @@ InfoPlatform:
 	@echo $(INFO_PLATFORM)
 
 MakeForJupiter: $(JUPITER_OBJECTS)
-#	$(CC) $(CCFLAGS) $(OBJECTS_PATH)/*.o -o Network_Control $(LIBRARIES)
 
 MakeForPolyphemus: $(POLYPHEMUS_OBJECTS)
 	@cd $(CAMERA_STREAMING_PATH)/src && $(MAKE) WIFI=1 && cd $(NETWORK_CONTROL_PATH)
