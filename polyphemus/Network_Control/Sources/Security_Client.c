@@ -116,7 +116,7 @@ int SecurityClientAuthenticateServer(int Socket_Server)
 	{
 		char String_Initialization_Vector[256] = {0};
 		int i;
-		
+
 		for (i = 0; i < sizeof(AES_Initialization_Vector); i++) sprintf(String_Initialization_Vector, "%s%02X ", String_Initialization_Vector, AES_Initialization_Vector[i]);
 		Log(LOG_DEBUG, "[Security_Client.SecurityClientAuthenticateServer] AES initialization vector : %s.", String_Initialization_Vector);
 	}
@@ -187,7 +187,7 @@ int SecurityClientReceiveVideoBuffer(int Socket_Server, void *Pointer_Received_V
 	int Bytes_To_Receive_Count, Received_Buffer_Size, Decrypted_Bytes_Count;
 
 	// Receive encrypted header
-	Received_Buffer_Size = read(Socket_Server, Encrypted_Video_Buffer, AES_BLOCK_SIZE_BYTES);
+	Received_Buffer_Size = recv(Socket_Server, Encrypted_Video_Buffer, AES_BLOCK_SIZE_BYTES, MSG_WAITALL);
 	if (Received_Buffer_Size != AES_BLOCK_SIZE_BYTES)
 	{
 		Log(LOG_ERR, "[Security_Client.SecurityClientReceiveVideoBuffer] Error : could not receive encrypted header from socket (received %d/%d bytes).", Received_Buffer_Size, AES_BLOCK_SIZE_BYTES);
