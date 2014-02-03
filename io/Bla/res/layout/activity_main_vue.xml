@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+        android:id="@+id/VerticalSplit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:gravity="top"
+        android:orientation="horizontal" >
+
+        <GridLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="0dp"
+            android:columnCount="3"
+            android:rowCount="3"
+            android:useDefaultMargins="false" >
+
+            <Button
+                android:id="@+id/Up"
+                android:layout_width="match_parent"
+                android:layout_height="fill_parent"
+                android:layout_column="1"
+                android:layout_gravity="center"
+                android:layout_margin="0dp"
+                android:layout_row="0"
+                android:minHeight="64dip"
+                android:minWidth="64dip"
+                android:onClick="upCallback"
+                android:padding="0dp"
+                android:scrollHorizontally="false"
+                android:text="Up" />
+
+            <Button
+                android:id="@+id/Down"
+                android:layout_column="1"
+                android:layout_gravity="left"
+                android:layout_row="2"
+                android:maxHeight="64dp"
+                android:maxLength="64"
+                android:minHeight="64dip"
+                android:minWidth="64dip"
+                android:onClick="downCallback"
+                android:text="Down" />
+
+            <Button
+                android:id="@+id/Left"
+                android:layout_column="0"
+                android:layout_gravity="left"
+                android:layout_row="1"
+                android:maxHeight="64dp"
+                android:maxLength="64"
+                android:minHeight="64dip"
+                android:minWidth="64dip"
+                android:onClick="leftCallback"
+                android:text="Left" />
+
+            <Button
+                android:id="@+id/Right"
+                android:layout_column="2"
+                android:layout_gravity="left"
+                android:layout_row="1"
+                android:maxHeight="64dp"
+                android:maxLength="64"
+                android:minHeight="64dip"
+                android:minWidth="64dip"
+                android:onClick="rightCallback"
+                android:text="Right" />
+        </GridLayout>
+
+        <GridLayout
+            android:layout_width="100dp"
+            android:layout_height="114dp"
+            android:columnCount="1"
+            android:paddingLeft="20dp"
+            android:rowCount="7" >
+
+            <CheckBox
+                android:id="@+id/Led"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="0"
+                android:layout_gravity="left"
+                android:layout_row="1"
+                android:onClick="ledCallback"
+                android:text="Led" />
+
+            <Button
+                android:id="@+id/Stop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="0"
+                android:layout_gravity="left|top"
+                android:layout_row="0"
+                android:onClick="stopCallback"
+                android:text="Stop"
+                android:textColorHint="@android:color/holo_red_light" />
+
+            <TextView
+                android:id="@+id/Voltage"
+                android:layout_width="62dp"
+                android:layout_column="0"
+                android:layout_gravity="center_horizontal|top"
+                android:layout_row="4"
+                android:text="0%" />
+        </GridLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/pourcentage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignTop="@+id/progressBarStep"
+        android:layout_marginTop="16dp"
+        android:text="0%"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <ProgressBar
+        android:id="@+id/progressBarStep"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="122dp" />
+
+    <TextView
+        android:id="@+id/labelSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/pourcentage"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="23dp"
+        android:text="Authentification"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <Button
+        android:id="@+id/stopActivity"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:onClick="stopApplication"
+        android:text="Arrêter" />
+
+</RelativeLayout>

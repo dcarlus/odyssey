@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Io </string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_serveur">Io </string>
+    <string name="title_activity_authentification">Io </string>
+
+</resources>

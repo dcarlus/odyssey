@@ -1,7 +1,7 @@
 Odyssey Project
 ===============
 
-Project of robot looking for objects in a room. The robot uses a Raspberry Pi connected to a camera (RaspiCam). This RPi is used to both control a PIC microcontroller and communicate with a PC. The PC performs the image processing required to detect objects and obstacles. All the communications are secured.
+Project of robot looking for objects in a room. The robot uses a Raspberry Pi connected to a camera (RaspiCam). This RPi is used to both control a PIC microcontroller and communicate with a PC or an Android device. The PC performs the image processing required to detect objects and obstacles. All the communications are secured.
 
 
 Mercury branch
@@ -23,3 +23,9 @@ Jupiter branch
 
 Jupiter is the chief of Roman deity.
 For our project, he represents the PC system. It manages the image processing to discover obstacles and items. So, it decides which way the robot must follow.
+
+
+Io branch
+---------
+
+She is one of Jupiter's lovers and a moon of the Jupiter planet. This Android app is used to control the robot via WiFi in a secured way, like a remote.
