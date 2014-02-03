@@ -1,6 +1,5 @@
 CC = gcc
 CCFLAGS = -Wall -O1
-#-O3
 LIBRARIES = -pthread -lgmp -lssl -lcrypto
 
 OBJECTS_PATH = Objects
@@ -33,7 +32,7 @@ InfoPlatform:
 MakeForJupiter: $(JUPITER_OBJECTS)
 
 MakeForPolyphemus: $(POLYPHEMUS_OBJECTS)
-	@cd $(CAMERA_STREAMING_PATH)/src && $(MAKE) WIFI=1 NDEBUG=1 && cd $(NETWORK_CONTROL_PATH)
+	@cd $(CAMERA_STREAMING_PATH)/src && $(MAKE) WIFI=1 && cd $(NETWORK_CONTROL_PATH)
 	@cp $(CAMERA_STREAMING_PATH)/build/obj/*.o $(OBJECTS_PATH)
 	$(CC) $(CCFLAGS) $(OBJECTS_PATH)/*.o -o Network_Control $(LIBRARIES)
 
