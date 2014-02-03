@@ -12,6 +12,7 @@
 #include "../Network.h"
 #include "../OMXUtils.h"
 #include "../PortsConfigurationUtils.h"
+#include "../../../Network_Control/Sources/Security_Server.h"
 #include <arpa/inet.h>
 #include <assert.h>
 
@@ -47,7 +48,6 @@ static void AppOMXContext_ConfigureCamera(AppOMXContext* self) {
 /** @brief  Configure the encoder parameters. */
 static void AppOMXContext_ConfigureEncoder(AppOMXContext* self) {
     BasicOMXHandler* encoderHandler = &(self -> encoder).basic ;
-    BasicOMXHandler* cameraHandler = &(self -> camera).basic ;
     encoderHandler -> configure(encoderHandler) ;
 }
 
@@ -118,10 +118,6 @@ static void AppOMXContext_SetUnflushed(AppOMXContext* self) {
                                                                /** UTILITIES **/
 static void _AppOMXContext_StopCapturing(AppOMXContext* self) {
     OMX_HANDLETYPE* camera = self -> getCamera(self) ;
-    OMX_HANDLETYPE* encoder = self -> getEncoder(self) ;
-    OMX_HANDLETYPE* nullSink = self -> getNullSink(self) ;
-    BufferOMXHandler* encoderHandler = self -> getEncoderHandler(self) ;
-    OMX_BUFFERHEADERTYPE* encoderBuffer = encoderHandler -> getBufferHeader(encoderHandler) ;
 
     // Stop capturing video with the camera
     OMX_CONFIG_PORTBOOLEANTYPE capture ;
@@ -280,9 +276,6 @@ static int _AppOMXContext_SendPicture(AppOMXContext* self,
                                        uint32_t offset,
                                        OMX_BUFFERHEADERTYPE* encoderBuffer) {
     if (dataLength > 256) {
-        // Length of the frame data: H264 header + picture
-        // data (written in Big Endian to send on network)
-        uint32_t fullLength = htonl(offset + dataLength) ;
         // Total size of the sent data for write()
         uint32_t bufferSize = offset + dataLength ;
 
@@ -290,8 +283,6 @@ static int _AppOMXContext_SendPicture(AppOMXContext* self,
         memcpy(bufferData + offset, dataContent, dataLength) ;
 
         // Send the full buffer to the client (Jupiter, IO)
-        StreamingServer* ss = &(self -> streamingServer) ;
-        size_t output_written ;
         char success = SecurityServerSendVideoBuffer(self -> clientSocket,
                                                      bufferData,
                                                      bufferSize) ;
@@ -379,7 +370,6 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
     log_printer("Start capture...") ;
 
     int quit_detected = 0 ;                                                     // Detect when the user want to quit
-    int quit_in_keyframe = 0 ;                                                  // Detect if a frame is synchronized before quitting
     int need_next_buffer_to_be_filled = 1 ;                                     // Request for a new frame
     unsigned char interframesCounter = 0 ;                                      // Counter of interframes (between two keyframes)
     unsigned char maxInterframes = VIDEO_KEYFRAME_FREQUENCY - 1 ;               // Maximal amount of interframes
@@ -414,7 +404,6 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
                 if (WantToQuit && !quit_detected) {
                     log_printer("Exit signal detected, waiting for next key frame boundary before exiting...") ;
                     quit_detected = 1 ;
-                    quit_in_keyframe = (encoderBuffer -> nFlags) & OMX_BUFFERFLAG_SYNCFRAME ;
                 }
 
                 if (quit_detected) {

@@ -54,7 +54,6 @@ static void _CameraHandler_SetCameraDeviceNumber(BasicOMXHandler* self) {
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _CameraHandler_ConfigureCameraPreviewFormat(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
 
     (self -> portDef).nPortIndex = PORT_CAMERA_PREVIEW ;
@@ -84,7 +83,6 @@ static void _CameraHandler_ConfigureCameraPreviewFormat(BasicOMXHandler* self) {
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _CameraHandler_ConfigureCameraVideoOutputFormat(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
 
     (self -> portDef).nPortIndex = PORT_CAMERA_PREVIEW ;
@@ -103,7 +101,6 @@ static void _CameraHandler_ConfigureCameraVideoOutputFormat(BasicOMXHandler* sel
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _CameraHandler_SetFramerate(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
 
     OMX_CONFIG_FRAMERATETYPE framerate ;
@@ -126,7 +123,6 @@ static void _CameraHandler_SetFramerate(BasicOMXHandler* self) {
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _CameraHandler_SetSharpness(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
 
     OMX_CONFIG_SHARPNESSTYPE sharpness ;
@@ -145,7 +141,6 @@ static void _CameraHandler_SetSharpness(BasicOMXHandler* self) {
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _CameraHandler_SetContrast(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
 
     OMX_CONFIG_CONTRASTTYPE contrast ;
@@ -164,7 +159,6 @@ static void _CameraHandler_SetContrast(BasicOMXHandler* self) {
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _CameraHandler_SetSaturation(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
 
     OMX_CONFIG_SATURATIONTYPE saturation ;
@@ -183,7 +177,6 @@ static void _CameraHandler_SetSaturation(BasicOMXHandler* self) {
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _CameraHandler_SetBrightness(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
 
     OMX_CONFIG_BRIGHTNESSTYPE brightness ;
@@ -202,7 +195,6 @@ static void _CameraHandler_SetBrightness(BasicOMXHandler* self) {
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _CameraHandler_SetExposure(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
 
     OMX_CONFIG_EXPOSUREVALUETYPE exposure_value ;
@@ -223,7 +215,6 @@ static void _CameraHandler_SetExposure(BasicOMXHandler* self) {
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _CameraHandler_SetFrameStabilization(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
 
     OMX_CONFIG_FRAMESTABTYPE frame_stabilisation_control ;
@@ -242,7 +233,6 @@ static void _CameraHandler_SetFrameStabilization(BasicOMXHandler* self) {
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _CameraHandler_SetWhiteBalance(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
 
     OMX_CONFIG_WHITEBALCONTROLTYPE white_balance_control ;
@@ -261,7 +251,6 @@ static void _CameraHandler_SetWhiteBalance(BasicOMXHandler* self) {
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _CameraHandler_SetImageFilter(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
 
     OMX_CONFIG_IMAGEFILTERTYPE image_filter ;
@@ -280,7 +269,6 @@ static void _CameraHandler_SetImageFilter(BasicOMXHandler* self) {
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _CameraHandler_SetMirror(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE camera = self -> type ;
 
     OMX_MIRRORTYPE eMirror = OMX_MirrorNone ;

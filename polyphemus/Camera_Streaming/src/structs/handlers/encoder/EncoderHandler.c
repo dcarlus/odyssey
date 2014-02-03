@@ -15,7 +15,6 @@
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _EncoderHandler_ConfigureOutputFormat(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE encoder = self -> type ;
 
     (self -> portDef).nPortIndex = PORT_ENCODER_OUTPUT ;
@@ -31,7 +30,6 @@ static void _EncoderHandler_ConfigureOutputFormat(BasicOMXHandler* self) {
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _EncoderHandler_ConfigureOutputPort(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE encoder = self -> type ;
 
     (self -> portDef).format.video.nFrameWidth  = VIDEO_WIDTH ;
@@ -57,7 +55,6 @@ static void _EncoderHandler_ConfigureOutputPort(BasicOMXHandler* self) {
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _EncoderHandler_ConfigureBitrate(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE encoder = self -> type ;
 
     OMX_VIDEO_PARAM_BITRATETYPE bitrate ;
@@ -77,7 +74,6 @@ static void _EncoderHandler_ConfigureBitrate(BasicOMXHandler* self) {
  * Copyright © 2013 Tuomas Jormola <tj@solitudo.net> <http://solitudo.net>
  */
 static void _EncoderHandler_ConfigureFormat(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE encoder = self -> type ;
 
     OMX_VIDEO_PARAM_PORTFORMATTYPE format ;
@@ -94,7 +90,6 @@ static void _EncoderHandler_ConfigureFormat(BasicOMXHandler* self) {
  * @brief   Enable SPS/PPS before each keyframe.
  */
 static void _EncoderHandler_ConfigureKeyframes(BasicOMXHandler* self) {
-    OMX_ERRORTYPE error ;
     OMX_HANDLETYPE encoder = self -> type ;
 
     {
