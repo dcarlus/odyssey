@@ -10,7 +10,7 @@ H264Decoder::H264Decoder() {
     av_init_packet(&m_avPacket) ;
     m_frameCounter = 0 ;
 
-    m_codec = avcodec_find_decoder(AV_CODEC_ID_H264) ;
+    m_codec = avcodec_find_decoder(CODEC_ID_H264) ;
     if (!m_codec) {
         cerr << "Codec H264 not found" << endl ;
         exit(1) ;
@@ -66,7 +66,7 @@ int H264Decoder::getRawData(uint8_t*& buffer) {
     m_lastReadFrame = m_frameCounter ;
 
     AVPicture rgbFrame ;
-    AVPixelFormat rgbFormat = PIX_FMT_BGR24 ;
+    PixelFormat rgbFormat = PIX_FMT_BGR24 ;
     if (convertPixelFormat(rgbFrame, rgbFormat)) {
         int width = m_rawPicture -> width ;
         int height = m_rawPicture -> height ;
@@ -94,8 +94,8 @@ int H264Decoder::getHeight() {
 
 
 bool H264Decoder::convertPixelFormat(AVPicture& destFrame,
-                                     AVPixelFormat destPixelFormat) {
-    AVPixelFormat yuvFormat = (AVPixelFormat) m_rawPicture -> format ;
+                                     PixelFormat destPixelFormat) {
+    PixelFormat yuvFormat = (PixelFormat) m_rawPicture -> format ;
     int width = m_rawPicture -> width ;
     int height = m_rawPicture -> height ;
 

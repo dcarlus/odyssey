@@ -10,6 +10,10 @@
     #endif
 
 #define INBUF_SIZE   4096
+
+#ifdef FF_INPUT_BUFFER_PADDING_SIZE
+    #undef FF_INPUT_BUFFER_PADDING_SIZE
+#endif
 #define FF_INPUT_BUFFER_PADDING_SIZE   16
 
 /**
@@ -80,7 +84,7 @@ class H264Decoder {
          * @param   destPixelFormat Pixel format used for the destination frame.
          */
         bool convertPixelFormat(AVPicture& destFrame,
-                                AVPixelFormat destPixelFormat) ;
+                                PixelFormat destPixelFormat) ;
 } ;
 
 #endif

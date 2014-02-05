@@ -1,6 +1,6 @@
 CC          = g++
 BINARY      = jupiter
-CCOPT       = -Wall -Werror
+CCOPT       = -Wall -Werror -D__STDC_CONSTANT_MACROS
 
 ifndef NDEBUG
     ECHO_DEBUG = "Compile in DEBUG mode"
