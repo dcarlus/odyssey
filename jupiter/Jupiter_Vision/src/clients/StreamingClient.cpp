@@ -1,5 +1,4 @@
 #include "StreamingClient.h"
-#include "../gui/VideoTexture.h"
 #include "../picture/SocketPicture.h"
 #include <assert.h>
 #include <pthread.h>
@@ -66,9 +65,6 @@ void StreamingClient::run() {
                 if (rawSize > 0) {
                     int width = m_decoder.getWidth() ;
                     int height = m_decoder.getHeight() ;
-
-                    // Set the data for display
-                    VideoTexture::getInstance() -> update(rawBuffer, width, height) ;
 
                     // Set the data used for image processing
                     pic.setData(rawBuffer, rawSize, width, height) ;
