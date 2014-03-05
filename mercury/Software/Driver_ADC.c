@@ -1,4 +1,4 @@
-/** Driver_ADC.c
+/** @file Driver_ADC.c
  * @see Driver_ADC.h for description.
  * @author Adrien RICCIARDI
  */

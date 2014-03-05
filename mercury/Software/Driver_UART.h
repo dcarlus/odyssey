@@ -2,6 +2,7 @@
  * Driver for the RS-232 Universal Asynchronous Receiver Transmitter.
  * @author Adrien RICCIARDI
  * @version 1.0 : 15/12/2013
+ * @version 1.1 : 03/03/2014, handled reception overrun error.
  */ 
 #ifndef H_DRIVER_UART_H
 #define H_DRIVER_UART_H

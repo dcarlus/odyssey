@@ -25,8 +25,7 @@ BCLIF	C:\Program Files\SourceBoost\Include\pic16F876.h	106;"	d
 BF	C:\Program Files\SourceBoost\Include\pic16F876.h	238;"	d
 BRGH	C:\Program Files\SourceBoost\Include\pic16F876.h	247;"	d
 BYTE	C:\Program Files\SourceBoost\Include\novo.h	71;"	t
-Backward	Motor.h	16;"	e
-Battery_Voltage	Main.c	23;"	v
+Battery_Voltage	Main.c	25;"	v	file:
 C	C:\Program Files\SourceBoost\Include\pic16F876.h	83;"	d
 CCP1CON	C:\Program Files\SourceBoost\Include\pic16F876.h	44;"	d
 CCP1IE	C:\Program Files\SourceBoost\Include\pic16F876.h	194;"	d
@@ -71,6 +70,11 @@ EEDATH	C:\Program Files\SourceBoost\Include\pic16F876.h	70;"	d
 EEIE	C:\Program Files\SourceBoost\Include\pic16F876.h	199;"	d
 EEIF	C:\Program Files\SourceBoost\Include\pic16F876.h	105;"	d
 EEPGD	C:\Program Files\SourceBoost\Include\pic16F876.h	260;"	d
+EEPROMReadByte	Driver_EEPROM.c	15;"	f	file:
+EEPROMReadWord	Driver_EEPROM.c	64;"	f
+EEPROMWriteByte	Driver_EEPROM.c	33;"	f	file:
+EEPROMWriteWord	Driver_EEPROM.c	80;"	f
+EEPROM_SIZE_BYTES	Driver_EEPROM.h	13;"	d
 EN_TASK_STATUS	C:\Program Files\SourceBoost\Include\novo.h	94;"	g
 EVENT_HANDLE	C:\Program Files\SourceBoost\Include\novo.h	74;"	t
 EVENT_NO_TIMEOUT	C:\Program Files\SourceBoost\Include\novo.h	92;"	d
@@ -79,7 +83,6 @@ F	C:\Program Files\SourceBoost\Include\pic16F876.h	20;"	d
 FERR	C:\Program Files\SourceBoost\Include\pic16F876.h	155;"	d
 FLAG	C:\Program Files\SourceBoost\Include\novo.h	75;"	t
 FSR	C:\Program Files\SourceBoost\Include\pic16F876.h	27;"	d
-Forward	Motor.h	16;"	e
 GCEN	C:\Program Files\SourceBoost\Include\pic16F876.h	209;"	d
 GIE	C:\Program Files\SourceBoost\Include\novo.h	58;"	d
 GIE	C:\Program Files\SourceBoost\Include\novo.h	65;"	d
@@ -88,8 +91,9 @@ GO	C:\Program Files\SourceBoost\Include\pic16F876.h	174;"	d
 GO_DONE	C:\Program Files\SourceBoost\Include\pic16F876.h	176;"	d
 HIBYTE	C:\Program Files\SourceBoost\Include\boostc.h	47;"	d
 H_DRIVER_ADC_H	Driver_ADC.h	7;"	d
-H_DRIVER_UART_H	Driver_UART.h	7;"	d
-H_MOTOR_H	Motor.h	10;"	d
+H_DRIVER_EEPROM_H	Driver_EEPROM.h	7;"	d
+H_DRIVER_UART_H	Driver_UART.h	8;"	d
+H_MOTOR_H	Motor.h	11;"	d
 H_ROBOT_H	Robot.h	7;"	d
 I2C_DATA	C:\Program Files\SourceBoost\Include\pic16F876.h	222;"	d
 I2C_READ	C:\Program Files\SourceBoost\Include\pic16F876.h	232;"	d
@@ -102,15 +106,36 @@ INTEDG	C:\Program Files\SourceBoost\Include\pic16F876.h	181;"	d
 INTF	C:\Program Files\SourceBoost\Include\pic16F876.h	92;"	d
 IRP	C:\Program Files\SourceBoost\Include\pic16F876.h	76;"	d
 LOBYTE	C:\Program Files\SourceBoost\Include\boostc.h	40;"	d
-Left	Motor.h	13;"	e
 MAKESHORT	C:\Program Files\SourceBoost\Include\boostc.h	33;"	d
 MAX_EQ_INDEX	C:\Program Files\SourceBoost\Include\novo.h	89;"	d
-MOTOR_LEFT_DUTY_CYCLE_BACKWARD	Motor.c	10;"	d	file:
-MOTOR_LEFT_DUTY_CYCLE_FORWARD	Motor.c	9;"	d	file:
-MOTOR_RIGHT_DUTY_CYCLE_BACKWARD	Motor.c	12;"	d	file:
-MOTOR_RIGHT_DUTY_CYCLE_FORWARD	Motor.c	11;"	d	file:
-MotorInit	Motor.c	14;"	f
-MotorSetState	Motor.c	29;"	f
+MOTOR_DIRECTION_BACKWARD	Motor.h	35;"	e
+MOTOR_DIRECTION_FORWARD	Motor.h	34;"	e
+MOTOR_LEFT	Motor.h	19;"	e
+MOTOR_LEFT_DEFAULT_DUTY_CYCLE_BACKWARD	Motor.c	18;"	d	file:
+MOTOR_LEFT_DEFAULT_DUTY_CYCLE_FORWARD	Motor.c	17;"	d	file:
+MOTOR_LEFT_EEPROM_ADDRESS_DUTY_CYCLE_BACKWARD	Motor.c	24;"	d	file:
+MOTOR_LEFT_EEPROM_ADDRESS_DUTY_CYCLE_FORWARD	Motor.c	23;"	d	file:
+MOTOR_LEFT_PIN	Motor.c	13;"	d	file:
+MOTOR_MAXIMUM_DUTY_CYCLE_VALUE	Motor.c	30;"	d	file:
+MOTOR_MINIMUM_DUTY_CYCLE_VALUE	Motor.c	29;"	d	file:
+MOTOR_RIGHT	Motor.h	20;"	e
+MOTOR_RIGHT_DEFAULT_DUTY_CYCLE_BACKWARD	Motor.c	20;"	d	file:
+MOTOR_RIGHT_DEFAULT_DUTY_CYCLE_FORWARD	Motor.c	19;"	d	file:
+MOTOR_RIGHT_EEPROM_ADDRESS_DUTY_CYCLE_BACKWARD	Motor.c	26;"	d	file:
+MOTOR_RIGHT_EEPROM_ADDRESS_DUTY_CYCLE_FORWARD	Motor.c	25;"	d	file:
+MOTOR_RIGHT_PIN	Motor.c	14;"	d	file:
+MOTOR_STATE_BACKWARD	Motor.h	28;"	e
+MOTOR_STATE_FORWARD	Motor.h	27;"	e
+MOTOR_STATE_STOPPED	Motor.h	26;"	e
+MotorChangeSpeed	Motor.c	125;"	f
+MotorInit	Motor.c	41;"	f
+MotorSetState	Motor.c	82;"	f
+Motor_Left_Duty_Cycle_Backward	Motor.c	35;"	v	file:
+Motor_Left_Duty_Cycle_Forward	Motor.c	35;"	v	file:
+Motor_Left_State	Motor.c	36;"	v	file:
+Motor_Right_Duty_Cycle_Backward	Motor.c	35;"	v	file:
+Motor_Right_Duty_Cycle_Forward	Motor.c	35;"	v	file:
+Motor_Right_State	Motor.c	36;"	v	file:
 NOT_A	C:\Program Files\SourceBoost\Include\pic16F876.h	223;"	d
 NOT_ADDRESS	C:\Program Files\SourceBoost\Include\pic16F876.h	224;"	d
 NOT_BO	C:\Program Files\SourceBoost\Include\pic16F876.h	205;"	d
@@ -166,10 +191,11 @@ RCSTA	C:\Program Files\SourceBoost\Include\pic16F876.h	45;"	d
 RD	C:\Program Files\SourceBoost\Include\pic16F876.h	264;"	d
 READ_WRITE	C:\Program Files\SourceBoost\Include\pic16F876.h	236;"	d
 ROBOT_COMMANDS_CODE_MASK	Robot.h	16;"	d
+ROBOT_COMMAND_CHANGE_MOTOR_SPEED	Robot.h	25;"	d
+ROBOT_COMMAND_MAGIC_NUMBER	Robot.h	13;"	d
 ROBOT_COMMAND_READ_BATTERY_VOLTAGE	Robot.h	23;"	d
 ROBOT_COMMAND_SET_LED_STATE	Robot.h	21;"	d
 ROBOT_COMMAND_SET_MOTOR_STATE	Robot.h	19;"	d
-ROBOT_START_CODE	Robot.h	13;"	d
 RP0	C:\Program Files\SourceBoost\Include\pic16F876.h	78;"	d
 RP1	C:\Program Files\SourceBoost\Include\pic16F876.h	77;"	d
 RSEN	C:\Program Files\SourceBoost\Include\pic16F876.h	215;"	d
@@ -177,10 +203,9 @@ RUN_QUEUE_HEAD	C:\Program Files\SourceBoost\Include\novo.h	79;"	d
 RX9	C:\Program Files\SourceBoost\Include\pic16F876.h	148;"	d
 RX9D	C:\Program Files\SourceBoost\Include\pic16F876.h	157;"	d
 R_W	C:\Program Files\SourceBoost\Include\pic16F876.h	235;"	d
-Right	Motor.h	13;"	e
-RobotInit	Robot.h	32;"	d
-RobotLedOff	Robot.h	50;"	d
-RobotLedOn	Robot.h	43;"	d
+RobotInit	Robot.h	34;"	d
+RobotLedOff	Robot.h	52;"	d
+RobotLedOn	Robot.h	45;"	d
 S	C:\Program Files\SourceBoost\Include\pic16F876.h	229;"	d
 SEN	C:\Program Files\SourceBoost\Include\pic16F876.h	216;"	d
 SLEEP_QUEUE_HEAD	C:\Program Files\SourceBoost\Include\novo.h	80;"	d
@@ -204,7 +229,6 @@ SSPSTAT	C:\Program Files\SourceBoost\Include\pic16F876.h	63;"	d
 STATUS	C:\Program Files\SourceBoost\Include\pic16F876.h	26;"	d
 SYNC	C:\Program Files\SourceBoost\Include\pic16F876.h	246;"	d
 Scheduler	C:\Program Files\SourceBoost\Include\novo.h	151;"	t
-Stopped	Motor.h	16;"	e
 SysCreateTask	C:\Program Files\SourceBoost\Include\novo.h	182;"	d
 SysCriticalSectionBegin	C:\Program Files\SourceBoost\Include\novo.h	155;"	d
 SysCriticalSectionEnd	C:\Program Files\SourceBoost\Include\novo.h	159;"	d
@@ -242,8 +266,9 @@ TMR2	C:\Program Files\SourceBoost\Include\pic16F876.h	38;"	d
 TMR2IE	C:\Program Files\SourceBoost\Include\pic16F876.h	195;"	d
 TMR2IF	C:\Program Files\SourceBoost\Include\pic16F876.h	101;"	d
 TMR2ON	C:\Program Files\SourceBoost\Include\pic16F876.h	124;"	d
-TMotor	Motor.h	13;"	t
-TMotorState	Motor.h	16;"	t
+TMotor	Motor.h	21;"	t
+TMotorDirection	Motor.h	36;"	t
+TMotorState	Motor.h	29;"	t
 TOUTPS0	C:\Program Files\SourceBoost\Include\pic16F876.h	123;"	d
 TOUTPS1	C:\Program Files\SourceBoost\Include\pic16F876.h	122;"	d
 TOUTPS2	C:\Program Files\SourceBoost\Include\pic16F876.h	121;"	d
@@ -268,15 +293,15 @@ TXIF	C:\Program Files\SourceBoost\Include\pic16F876.h	98;"	d
 TXREG	C:\Program Files\SourceBoost\Include\pic16F876.h	46;"	d
 TXSTA	C:\Program Files\SourceBoost\Include\pic16F876.h	64;"	d
 UA	C:\Program Files\SourceBoost\Include\pic16F876.h	237;"	d
-UARTClearInterruptFlag	Driver_UART.h	66;"	d
-UARTDisableInterrupt	Driver_UART.h	50;"	d
-UARTEnableInterrupt	Driver_UART.h	43;"	d
-UARTHasInterruptOccured	Driver_UART.h	59;"	d
+UARTClearInterruptFlag	Driver_UART.h	67;"	d
+UARTDisableInterrupt	Driver_UART.h	51;"	d
+UARTEnableInterrupt	Driver_UART.h	44;"	d
+UARTHasInterruptOccured	Driver_UART.h	60;"	d
 UARTInit	Driver_UART.c	8;"	f
 UARTReadByte	Driver_UART.c	20;"	f
-UARTWriteByte	Driver_UART.c	28;"	f
-UART_BAUD_RATE_115200	Driver_UART.h	15;"	d
-UART_BAUD_RATE_230400	Driver_UART.h	17;"	d
+UARTWriteByte	Driver_UART.c	39;"	f
+UART_BAUD_RATE_115200	Driver_UART.h	16;"	d
+UART_BAUD_RATE_230400	Driver_UART.h	18;"	d
 W	C:\Program Files\SourceBoost\Include\pic16F876.h	19;"	d
 WCOL	C:\Program Files\SourceBoost\Include\pic16F876.h	129;"	d
 WR	C:\Program Files\SourceBoost\Include\pic16F876.h	263;"	d
@@ -336,8 +361,8 @@ indf	C:\Program Files\SourceBoost\Include\pic16F876.h	307;"	v
 intcon	C:\Program Files\SourceBoost\Include\novo.h	57;"	v
 intcon	C:\Program Files\SourceBoost\Include\novo.h	64;"	v
 intcon	C:\Program Files\SourceBoost\Include\pic16F876.h	316;"	v
-interrupt	Main.c	28;"	f
-main	Main.c	82;"	f
+interrupt	Main.c	30;"	f
+main	Main.c	110;"	f
 nop	C:\Program Files\SourceBoost\Include\boostc.h	62;"	f
 option_reg	C:\Program Files\SourceBoost\Include\pic16F876.h	337;"	v
 pcl	C:\Program Files\SourceBoost\Include\pic16F876.h	309;"	v

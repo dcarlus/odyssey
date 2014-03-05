@@ -1,4 +1,4 @@
-/** Driver_UART.c
+/** @file Driver_UART.c
  * @see Driver_UART.h for description.
  * @author Adrien RICCIARDI
  */
@@ -19,6 +19,17 @@ void UARTInit(unsigned char Baud_Rate)
 
 unsigned char UARTReadByte(void)
 {
+	// Check if an overrun error happened
+	if (rcsta.OERR)
+	{
+		// Clear error
+		rcsta.OERR = 0;
+		
+		// Reset receiver logic to reenable reception
+		rcsta.CREN = 0;
+		rcsta.CREN = 1;
+	}
+
 	// Wait for data to be received
 	while (!pir1.RCIF);
 	// Get data

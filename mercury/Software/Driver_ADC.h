@@ -6,6 +6,9 @@
 #ifndef H_DRIVER_ADC_H
 #define H_DRIVER_ADC_H
 
+//---------------------------------------------------------------------------------------------------------------
+// Functions
+//---------------------------------------------------------------------------------------------------------------
 /** Initialize ADC module to sample the battery voltage present on pin RA0.
  * @warning This function must be called only once at the beginning of the program.
  */

@@ -11,15 +11,17 @@ Last Ext=c
 Last ExtIdx=1
 Last Dir=C:\Program Files\SourceBoost\include\
 [Files]
-Count=8
+Count=10
 File0=Driver_ADC.c
 File1=Driver_ADC.h
-File2=Driver_UART.c
-File3=Driver_UART.h
-File4=Main.c
-File5=Motor.c
-File6=Motor.h
-File7=Robot.h
+File2=Driver_EEPROM.c
+File3=Driver_EEPROM.h
+File4=Driver_UART.c
+File5=Driver_UART.h
+File6=Main.c
+File7=Motor.c
+File8=Motor.h
+File9=Robot.h
 [Tools]
 BoostDir=C:\Program Files\SourceBoost\
 Programmer=
