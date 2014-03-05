@@ -64,7 +64,7 @@ int main(void)
 		switch (getchar())
 		{
 			case 'z':
-				InterfaceDisplayDirection("FORWARD ");
+				InterfaceDisplayDirection("FORWARD");
 				RobotSetMotion(ROBOT_MOTION_FORWARD);
 				break;
 
@@ -74,19 +74,67 @@ int main(void)
 				break;
 
 			case 'q':
-				InterfaceDisplayDirection("LEFT    ");
+				InterfaceDisplayDirection("LEFT");
 				RobotSetMotion(ROBOT_MOTION_FORWARD_TURN_LEFT);
 				break;
 
 			case 'd':
-				InterfaceDisplayDirection("RIGHT   ");
+				InterfaceDisplayDirection("RIGHT");
 				RobotSetMotion(ROBOT_MOTION_FORWARD_TURN_RIGHT);
 				break;
 
 			// Stop robot
 			case ' ':
-				InterfaceDisplayDirection("STOPPED ");
+				InterfaceDisplayDirection("STOPPED");
 				RobotSetMotion(ROBOT_MOTION_STOPPED);
+				break;
+
+			// Increase left motor forward speed
+			case 'u':
+				InterfaceDisplaySpeed("Left forward faster");
+				RobotChangeMotorSpeed(ROBOT_MOTOR_LEFT, ROBOT_MOTOR_DIRECTION_FORWARD, 1);
+				break;
+
+			// Decrease left motor forward speed
+			case 'j':
+				InterfaceDisplaySpeed("Left forward slower");
+				RobotChangeMotorSpeed(ROBOT_MOTOR_LEFT, ROBOT_MOTOR_DIRECTION_FORWARD, 0);
+				break;
+
+			// Increase right motor forward speed
+			case 'i':
+				InterfaceDisplaySpeed("Right forward faster");
+				RobotChangeMotorSpeed(ROBOT_MOTOR_RIGHT, ROBOT_MOTOR_DIRECTION_FORWARD, 1);
+				break;
+
+			// Decrease right motor forward speed
+			case 'k':
+				InterfaceDisplaySpeed("Right forward slower");
+				RobotChangeMotorSpeed(ROBOT_MOTOR_RIGHT, ROBOT_MOTOR_DIRECTION_FORWARD, 0);
+				break;
+
+			// Increase left motor backward speed
+			case 'o':
+				InterfaceDisplaySpeed("Left backward faster");
+				RobotChangeMotorSpeed(ROBOT_MOTOR_LEFT, ROBOT_MOTOR_DIRECTION_BACKWARD, 1);
+				break;
+
+			// Decrease left motor backward speed
+			case 'l':
+				InterfaceDisplaySpeed("Left backward slower");
+				RobotChangeMotorSpeed(ROBOT_MOTOR_LEFT, ROBOT_MOTOR_DIRECTION_BACKWARD, 0);
+				break;
+
+			// Increase right motor backward speed
+			case 'p':
+				InterfaceDisplaySpeed("Right backward faster");
+				RobotChangeMotorSpeed(ROBOT_MOTOR_RIGHT, ROBOT_MOTOR_DIRECTION_BACKWARD, 1);
+				break;
+
+			// Decrease right motor backward speed
+			case 'm':
+				InterfaceDisplaySpeed("Right backward slower");
+				RobotChangeMotorSpeed(ROBOT_MOTOR_RIGHT, ROBOT_MOTOR_DIRECTION_BACKWARD, 0);
 				break;
 
 			// Exit

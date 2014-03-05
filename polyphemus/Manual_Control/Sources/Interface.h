@@ -28,6 +28,11 @@ void InterfaceDisplayBatteryVoltage(int Percentage, float Voltage);
  */
 void InterfaceDisplayDirection(char *String_Direction);
 
+/** Display the last speed modification.
+ * @param String_Speed A null-terminated string indicating the speed modification.
+ */
+void InterfaceDisplaySpeed(char *String_Speed);
+
 /** Show keyboard commands and hints on the bottom of the screen. */
 void InterfaceDisplayHints(void);
 

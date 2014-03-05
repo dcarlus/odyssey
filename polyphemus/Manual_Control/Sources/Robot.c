@@ -10,26 +10,22 @@
 //-----------------------------------------------------------------------------
 // Private constants
 //-----------------------------------------------------------------------------
-/* How many microseconds to wait for the motors to stop. */
+/** Commands leading magic number needed to avoid UART glitches. */
+#define ROBOT_COMMAND_MAGIC_NUMBER 0xA5
+
+/** How many microseconds to wait for the motors to stop. */
 #define ROBOT_MOTORS_STOPPING_TIME 500000
 
 //-----------------------------------------------------------------------------
 // Private types
 //-----------------------------------------------------------------------------
-// Identify the motor
+/** Available states for a motor. */
 typedef enum
 {
-	MOTOR_LEFT,
-	MOTOR_RIGHT
-} TMotor;
-
-// Available states for a motor
-typedef enum
-{
-	MOTOR_STATE_STOPPED,
-	MOTOR_STATE_FORWARD,
-	MOTOR_STATE_BACKWARD
-} TMotorState;
+	ROBOT_MOTOR_STATE_STOPPED,
+	ROBOT_MOTOR_STATE_FORWARD,
+	ROBOT_MOTOR_STATE_BACKWARD
+} TRobotMotorState;
 
 //-----------------------------------------------------------------------------
 // Private variables
@@ -46,32 +42,35 @@ pthread_mutex_t Mutex = PTHREAD_MUTEX_INITIALIZER;
  * @warning It is not possible to instantly change a motor direction, you have to wait some time to avoid high currents rebooting the system.
  * @warning This function is not protected by the mutex.
  */
-static void RobotSetMotorState(TMotor Motor, TMotorState State)
+static void RobotSetMotorState(TRobotMotor Motor, TRobotMotorState State)
 {
 	unsigned char Command = 0; // Opcode is 0
 
 	// Set motor ID
-	if (Motor == MOTOR_RIGHT) Command |= 0x20;
+	if (Motor == ROBOT_MOTOR_RIGHT) Command |= 0x20;
 
 	// Set state
-	if (State == MOTOR_STATE_FORWARD) Command |= 0x08;
-	else if (State == MOTOR_STATE_BACKWARD) Command |= 0x10;
+	if (State == ROBOT_MOTOR_STATE_FORWARD) Command |= 0x08;
+	else if (State == ROBOT_MOTOR_STATE_BACKWARD) Command |= 0x10;
 
 	// Send command
+	UARTWriteByte(ROBOT_COMMAND_MAGIC_NUMBER);
 	UARTWriteByte(Command);
 }
 
 /* Stop the motors and wait the required time for the motor to evacuate their internal current. */
 static void RobotStopMotors(void)
 {
-	// Stop motors
 	pthread_mutex_lock(&Mutex);
-	RobotSetMotorState(MOTOR_LEFT, MOTOR_STATE_STOPPED);
-	RobotSetMotorState(MOTOR_RIGHT, MOTOR_STATE_STOPPED);
-	pthread_mutex_unlock(&Mutex);
+
+	// Stop motors
+	RobotSetMotorState(ROBOT_MOTOR_LEFT, ROBOT_MOTOR_STATE_STOPPED);
+	RobotSetMotorState(ROBOT_MOTOR_RIGHT, ROBOT_MOTOR_STATE_STOPPED);
 
 	// Wait for the minimum time needed by the motors to stop and evacuate their internel high current
 	usleep(ROBOT_MOTORS_STOPPING_TIME);
+
+	pthread_mutex_unlock(&Mutex);
 }
 
 //-----------------------------------------------------------------------------
@@ -80,19 +79,20 @@ static void RobotStopMotors(void)
 int RobotInit(char *String_UART_Device_File)
 {
 	if (!UARTOpen(String_UART_Device_File, B115200)) return 0;
-
-	// Start robot firmware
-	UARTWriteByte(0xCA);
 	return 1;
 }
 
 void RobotSetLedState(int Is_Lighted)
 {
+	unsigned char Command;
+
+	if (Is_Lighted) Command = 0x60;
+	else Command = 0x40;
+
+	// Send command
 	pthread_mutex_lock(&Mutex);
-
-	if (Is_Lighted) UARTWriteByte(0x60);
-	else UARTWriteByte(0x40);
-
+	UARTWriteByte(ROBOT_COMMAND_MAGIC_NUMBER);
+	UARTWriteByte(Command);
 	pthread_mutex_unlock(&Mutex);
 }
 
@@ -103,6 +103,7 @@ float RobotReadBatteryVoltage(void)
 	pthread_mutex_lock(&Mutex);
 
 	// Send command
+	UARTWriteByte(ROBOT_COMMAND_MAGIC_NUMBER);
 	UARTWriteByte(0x80);
 
 	// Receive raw ADC 10-bit value in big endian
@@ -129,8 +130,8 @@ void RobotSetMotion(TRobotMotion Motion)
 
 			// Go forward
 			pthread_mutex_lock(&Mutex);
-			RobotSetMotorState(MOTOR_LEFT, MOTOR_STATE_FORWARD);
-			RobotSetMotorState(MOTOR_RIGHT, MOTOR_STATE_FORWARD);
+			RobotSetMotorState(ROBOT_MOTOR_LEFT, ROBOT_MOTOR_STATE_FORWARD);
+			RobotSetMotorState(ROBOT_MOTOR_RIGHT, ROBOT_MOTOR_STATE_FORWARD);
 			pthread_mutex_unlock(&Mutex);
 
 			Previous_Motion = ROBOT_MOTION_FORWARD;
@@ -144,8 +145,8 @@ void RobotSetMotion(TRobotMotion Motion)
 
 			// Go forward and turn left
 			pthread_mutex_lock(&Mutex);
-			RobotSetMotorState(MOTOR_LEFT, MOTOR_STATE_STOPPED);
-			RobotSetMotorState(MOTOR_RIGHT, MOTOR_STATE_FORWARD);
+			RobotSetMotorState(ROBOT_MOTOR_LEFT, ROBOT_MOTOR_STATE_STOPPED);
+			RobotSetMotorState(ROBOT_MOTOR_RIGHT, ROBOT_MOTOR_STATE_FORWARD);
 			pthread_mutex_unlock(&Mutex);
 
 			Previous_Motion = ROBOT_MOTION_FORWARD_TURN_LEFT;
@@ -159,8 +160,8 @@ void RobotSetMotion(TRobotMotion Motion)
 
 			// Go forward and turn right
 			pthread_mutex_lock(&Mutex);
-			RobotSetMotorState(MOTOR_LEFT, MOTOR_STATE_FORWARD);
-			RobotSetMotorState(MOTOR_RIGHT, MOTOR_STATE_STOPPED);
+			RobotSetMotorState(ROBOT_MOTOR_LEFT, ROBOT_MOTOR_STATE_FORWARD);
+			RobotSetMotorState(ROBOT_MOTOR_RIGHT, ROBOT_MOTOR_STATE_STOPPED);
 			pthread_mutex_unlock(&Mutex);
 
 			Previous_Motion = ROBOT_MOTION_FORWARD_TURN_RIGHT;
@@ -174,8 +175,8 @@ void RobotSetMotion(TRobotMotion Motion)
 
 			// Go backward
 			pthread_mutex_lock(&Mutex);
-			RobotSetMotorState(MOTOR_LEFT, MOTOR_STATE_BACKWARD);
-			RobotSetMotorState(MOTOR_RIGHT, MOTOR_STATE_BACKWARD);
+			RobotSetMotorState(ROBOT_MOTOR_LEFT, ROBOT_MOTOR_STATE_BACKWARD);
+			RobotSetMotorState(ROBOT_MOTOR_RIGHT, ROBOT_MOTOR_STATE_BACKWARD);
 			pthread_mutex_unlock(&Mutex);
 
 			Previous_Motion = ROBOT_MOTION_BACKWARD;
@@ -189,8 +190,8 @@ void RobotSetMotion(TRobotMotion Motion)
 
 			// Go backward and turn left
 			pthread_mutex_lock(&Mutex);
-			RobotSetMotorState(MOTOR_LEFT, MOTOR_STATE_STOPPED);
-			RobotSetMotorState(MOTOR_RIGHT, MOTOR_STATE_BACKWARD);
+			RobotSetMotorState(ROBOT_MOTOR_LEFT, ROBOT_MOTOR_STATE_STOPPED);
+			RobotSetMotorState(ROBOT_MOTOR_RIGHT, ROBOT_MOTOR_STATE_BACKWARD);
 			pthread_mutex_unlock(&Mutex);
 
 			Previous_Motion = ROBOT_MOTION_BACKWARD_TURN_LEFT;
@@ -204,8 +205,8 @@ void RobotSetMotion(TRobotMotion Motion)
 
 			// Go backward and turn right
 			pthread_mutex_lock(&Mutex);
-			RobotSetMotorState(MOTOR_LEFT, MOTOR_STATE_BACKWARD);
-			RobotSetMotorState(MOTOR_RIGHT, MOTOR_STATE_STOPPED);
+			RobotSetMotorState(ROBOT_MOTOR_LEFT, ROBOT_MOTOR_STATE_BACKWARD);
+			RobotSetMotorState(ROBOT_MOTOR_RIGHT, ROBOT_MOTOR_STATE_STOPPED);
 			pthread_mutex_unlock(&Mutex);
 
 			Previous_Motion = ROBOT_MOTION_BACKWARD_TURN_RIGHT;
@@ -217,4 +218,24 @@ void RobotSetMotion(TRobotMotion Motion)
 			Previous_Motion = ROBOT_MOTION_STOPPED;
 			break;
 	}
+}
+
+void RobotChangeMotorSpeed(TRobotMotor Motor, TRobotMotorDirection Direction, int Is_Speed_Increased)
+{
+	unsigned char Command = 0xC0; // Opcode
+
+	// Set motor ID
+	if (Motor == ROBOT_MOTOR_RIGHT) Command |= 0x20;
+
+	// Set motor direction
+	if (Direction == ROBOT_MOTOR_DIRECTION_BACKWARD) Command |= 0x10;
+
+	// Set speed modification
+	if (Is_Speed_Increased) Command |= 0x08;
+
+	// Send command
+	pthread_mutex_lock(&Mutex);
+	UARTWriteByte(ROBOT_COMMAND_MAGIC_NUMBER);
+	UARTWriteByte(Command);
+	pthread_mutex_unlock(&Mutex);
 }

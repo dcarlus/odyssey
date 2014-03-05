@@ -79,6 +79,10 @@ void InterfaceDisplayBatteryVoltage(int Percentage, float Voltage)
 
 void InterfaceDisplayDirection(char *String_Direction)
 {
+	// Clear previous trace
+	mvaddstr(2, 0, "                            ");
+
+	// Show current direction
 	mvaddstr(2, 0, "Direction : ");
 	attron(COLOR_PAIR(COLOR_PAIR_YELLOW));
 	addstr(String_Direction);
@@ -86,9 +90,28 @@ void InterfaceDisplayDirection(char *String_Direction)
 	refresh();
 }
 
+void InterfaceDisplaySpeed(char *String_Speed)
+{
+	// Clear previous trace
+	mvaddstr(4, 0, "                                                ");
+
+	// Show last speed modification
+	mvaddstr(4, 0, "Speed : ");
+	attron(COLOR_PAIR(COLOR_PAIR_YELLOW));
+	addstr(String_Speed);
+	attroff(COLOR_PAIR(COLOR_PAIR_YELLOW));
+	refresh();
+}
+
 void InterfaceDisplayHints(void)
 {
-	char *String_Hints = "Use Z, Q, S, D keys to move the robot.\nHit Space to stop the robot.\nHit X to quit program.";
+	char *String_Hints = "Z, Q, S, D : move the robot.\n" \
+		"Space : stop the robot.\n" \
+		"U, J : increase/decrease left motor forward speed.\n" \
+		"I, K : increase/decrease right motor forward speed.\n" \
+		"O, L : increase/decrease left motor backward speed.\n" \
+		"P, M : increase/decrease right motor backward speed.\n" \
+		"X : exit program.";
 
-	mvaddstr(LINES - 3, 0, String_Hints);
+	mvaddstr(LINES - 7, 0, String_Hints);
 }
