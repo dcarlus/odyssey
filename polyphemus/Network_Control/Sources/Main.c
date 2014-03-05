@@ -6,6 +6,7 @@
  * @version 1.2 : 11/01/2014, debug is now written to syslog and server is a daemon.
  * @version 1.3 : 14/01/2014, added security.
  * @version 1.4 : 27/01/2014, merged with video streaming server.
+ * @version 1.5 : 05/03/2014, use new robot commands format.
  */
 #include <stdio.h>
 #include <unistd.h> // For read(), write()...
@@ -218,7 +219,6 @@ int main(int argc, char *argv[])
 
 		// Enable streaming server
 		streamingReady = 1;
-		
 		Log(LOG_INFO, "Client connected.");
 
 		while (1)

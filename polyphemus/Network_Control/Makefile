@@ -1,5 +1,6 @@
 CC = gcc
 CCFLAGS = -Wall -O1
+#-O3
 LIBRARIES = -pthread -lgmp -lssl -lcrypto
 
 OBJECTS_PATH = Objects
