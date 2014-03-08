@@ -363,7 +363,7 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
         dump_port(encoder, PORT_ENCODER_OUTPUT, OMX_FALSE) ;
         log_printer("Configured port definition for null sink input port 240") ;
         dump_port(nullSink, PORT_NULLSINK_INPUT, OMX_FALSE) ;
-        
+
         isInitialized = 1 ;
     }
 
@@ -385,6 +385,14 @@ static void AppOMXContext_CaptureVideo(AppOMXContext* self) {
             if ((self -> clientSocket) < 0) {
                 ss -> close(ss) ;
                 die("Error : the client could not connect.\n") ;
+            }
+
+            // Disconnect the client if he was not previously authentified
+            if (!streamingReady) {
+                close(self -> clientSocket) ;
+                self -> clientSocket = -2 ;
+                log_printer("Warning : a non-authentified client tried to connect to streaming server.\n") ;
+                continue ;
             }
 
             log_printer("Client connected !") ;
@@ -524,11 +532,7 @@ static void _AppOMXContext_Init(AppOMXContext* self) {
 
 
     // Initialize data
-    #ifdef NETWORK_WIFI
-        self -> streamingServer = StreamingServer_Construct(serverIp, 9587) ;
-    #else
-        self -> streamingServer = StreamingServer_Construct(serverIp, 9587) ;
-    #endif
+    self -> streamingServer = StreamingServer_Construct(serverIp, 9587) ;
     self -> camera = CameraBufferHandler_Construct() ;
     self -> encoder = EncoderBufferHandler_Construct() ;
     self -> nullSink = NullSinkHandler_Construct() ;

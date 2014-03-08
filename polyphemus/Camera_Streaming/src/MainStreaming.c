@@ -113,7 +113,6 @@ static void configureNullSink(AppOMXContext* ctx) {
 
 
 int mainStreaming(char* ip) {
-/*int main() {*/
     // Prepare the application context to get video stream
     AppOMXContext ctx = AppOMXContext_Construct(ip) ;
     initAppOMX(&ctx) ;
@@ -129,7 +128,6 @@ int mainStreaming(char* ip) {
 
     // Capture and make video streaming over Wifi connection
     while (1) {
-        while (!streamingReady) ;
         ctx.capture(&ctx) ;
     }
     return 0 ;
