@@ -15,6 +15,13 @@ class StreamingClient : public es::Client, private NoCopy {
     private:
         /** @brief  Unique instance of the streaming client. */
         static StreamingClient* Instance ;
+
+		/** @brief	IP of the server to connect to. */
+		static std::string IP ;
+		/** @brief	Port of the server to connect to. */
+		static unsigned short Port ;
+		
+
         /** @brief  Decoder used by the client to get uncompressed picture data. */
         H264Decoder m_decoder ;
 
@@ -29,6 +36,15 @@ class StreamingClient : public es::Client, private NoCopy {
     public:
         /** @brief  Get the StreamingClient instance. */
         static StreamingClient* getInstance() ;
+
+		/**
+		 * @brief	Set the IP and Port of the server to connect to.
+		 * @param	ip		IP of the server.
+		 * @param	port	Port of the server.
+		 * @return	TRUE of successful configuration, FALSE else.
+		 */
+		static bool configure(const std::string& ip = IP,
+							  const unsigned short port = Port) ;
 
 
     protected:

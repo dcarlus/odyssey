@@ -11,14 +11,11 @@ using namespace std ;
 using namespace es ;
 
 StreamingClient* StreamingClient::Instance = 0 ;
+std::string StreamingClient::IP = "192.168.100.1" ;
+unsigned short StreamingClient::Port = 9587 ;
 
 
-    #ifdef WIFI_NETWORK
-        StreamingClient::StreamingClient() : Client("192.168.100.1", 9587) {
-    #else
-        StreamingClient::StreamingClient() : Client("192.168.0.2", 9587) {
-    #endif
-    }
+StreamingClient::StreamingClient() : Client(StreamingClient::IP, StreamingClient::Port) {}
 
 StreamingClient::~StreamingClient() throw() {}
 
@@ -26,6 +23,17 @@ StreamingClient* StreamingClient::getInstance() {
     if (Instance == 0)
         Instance = new StreamingClient() ;
     return Instance ;
+}
+
+bool StreamingClient::configure(const std::string& ip, const unsigned short port) {
+	if (Instance == 0) {
+		StreamingClient::IP = ip ;
+		StreamingClient::Port = port ;
+		return true ;
+		
+	}
+
+	return false ;
 }
 
 

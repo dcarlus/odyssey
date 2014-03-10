@@ -48,6 +48,11 @@ int main(int argc, char** argv) {
     if (successSecurity == 0) {
         srand(time(0)) ;
 
+		if (argc > 3) {
+			CommandClient::configure(argv[3]) ;
+			StreamingClient::configure(argv[3]) ;
+		}
+
         CommandClient::getInstance() ;
 
         Allegro::getInstance() ;

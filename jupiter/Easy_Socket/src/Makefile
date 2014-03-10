@@ -11,8 +11,16 @@ SRC = $(COMM_SRC) $(TOOLS_SRC)
 LIBS = -lpthread
 
 BIN_DIR = ../build
-PROG = libeasysocket.so
-OUTPUT = $(BIN_DIR)/$(PROG)
+LIB_NAME= libeasysocket
 
-all:
-	$(CC) $(CCOPTS) $(SRC) -o $(OUTPUT) $(LIBS) 
+all: dynamic static
+
+dynamic:
+	$(CC) $(CCOPTS) $(SRC) -o $(BIN_DIR)/$(LIB_NAME).so $(LIBS)
+
+static:
+	$(AR) rs $(BIN_DIR)/$(LIB_NAME).a $(SRC)
+
+clean:
+	rm $(BIN_DIR)/$(LIB_NAME).so
+	rm $(BIN_DIR)/$(LIB_NAME).a

@@ -9,19 +9,17 @@ using namespace std ;
 using namespace es ;
 
 CommandClient* CommandClient::Instance = 0 ;
+std::string CommandClient::IP = "192.168.100.1" ;
+unsigned short CommandClient::Port = 1234 ;
 
 
-    #ifdef WIFI_NETWORK
-        CommandClient::CommandClient() : Client("192.168.100.1", 1234) {
-    #else
-        CommandClient::CommandClient() : Client("192.168.0.2", 1234) {
-    #endif
-            assert(SecurityClientAuthenticateServer(m_socket.getSocket())) ;
-            cout << "Connected to Mercury" << endl ;
+CommandClient::CommandClient() : Client(CommandClient::IP, CommandClient::Port) {
+    assert(SecurityClientAuthenticateServer(m_socket.getSocket())) ;
+    cout << "Connected to Mercury" << endl ;
 
-            m_isLEDOn = false ;
-            sleep(5) ;
-        }
+    m_isLEDOn = false ;
+    sleep(5) ;
+}
 
 CommandClient::~CommandClient() throw() {
     sendMoveCommand(ROBOT_COMMAND_STOP) ;
@@ -32,6 +30,17 @@ CommandClient* CommandClient::getInstance() {
     if (Instance == 0)
         Instance = new CommandClient() ;
     return Instance ;
+}
+
+bool CommandClient::configure(const std::string& ip, const unsigned short port) {
+	if (Instance == 0) {
+		CommandClient::IP = ip ;
+		CommandClient::Port = port ;
+		return true ;
+		
+	}
+
+	return false ;
 }
 
 

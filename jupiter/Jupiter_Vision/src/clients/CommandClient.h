@@ -15,6 +15,12 @@ class CommandClient : public es::Client, private NoCopy {
         /** @brief  Unique instance of the streaming client. */
         static CommandClient* Instance ;
 
+		/** @brief	IP of the server to connect to. */
+		static std::string IP ;
+		/** @brief	Port of the server to connect to. */
+		static unsigned short Port ;
+
+
         /** @brief  State of the LED on Mercury. */
         bool m_isLEDOn ;
 
@@ -30,6 +36,15 @@ class CommandClient : public es::Client, private NoCopy {
     public:
         /** @brief  Get the CommandClient instance. */
         static CommandClient* getInstance() ;
+
+		/**
+		 * @brief	Set the IP and Port of the server to connect to.
+		 * @param	ip		IP of the server.
+		 * @param	port	Port of the server.
+		 * @return	TRUE of successful configuration, FALSE else.
+		 */
+		static bool configure(const std::string& ip = IP,
+							  const unsigned short port = Port) ;
 
         /**
          * @brief   Send a command to Mercury to make it move.
