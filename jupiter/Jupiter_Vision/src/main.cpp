@@ -14,8 +14,8 @@ char initSecurity(int argc, char** argv) {
     #endif
 
     // Check parameters
-    if (argc != 3) {
-	    printf("Bad calling arguments. Usage : %s keysFilePath counterFilePath\n", argv[0]) ;
+    if ((argc < 3) || (argc > 4)) {
+	    printf("Bad calling arguments. Usage : %s keysFilePath counterFilePath [serverIpAddress]\n", argv[0]) ;
 	    return -1 ;
     }
 
